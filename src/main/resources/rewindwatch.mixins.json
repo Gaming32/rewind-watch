@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.gaming32.rewindwatch.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+  ],
+  "client": [
+    "client.MixinLivingEntityRenderer",
+    "client.MixinShaderInstance"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
