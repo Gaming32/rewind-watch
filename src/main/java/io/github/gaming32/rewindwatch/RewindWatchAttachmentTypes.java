@@ -14,7 +14,7 @@ public class RewindWatchAttachmentTypes {
         "entity_effect", () -> AttachmentType.<EntityEffect>builder(() -> EntityEffect.Simple.NONE).build()
     );
 
-    static void register(IEventBus bus) {
+    public static void register(IEventBus bus) {
         REGISTER.register(bus);
     }
 }
