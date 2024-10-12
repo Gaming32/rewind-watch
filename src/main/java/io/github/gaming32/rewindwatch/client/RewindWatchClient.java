@@ -1,30 +1,80 @@
 package io.github.gaming32.rewindwatch.client;
 
 import io.github.gaming32.rewindwatch.EntityEffect;
+import io.github.gaming32.rewindwatch.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.RewindWatch;
-import io.github.gaming32.rewindwatch.RewindWatchAttachmentTypes;
-import io.github.gaming32.rewindwatch.client.render.RewindWatchRenderState;
+import io.github.gaming32.rewindwatch.client.entity.FakePlayerEntityRenderer;
+import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
+import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderTypes;
+import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
+import io.github.gaming32.rewindwatch.network.AnimationStatePayload;
+import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
 @Mod(value = RewindWatch.MOD_ID, dist = Dist.CLIENT)
 public class RewindWatchClient {
-    public RewindWatchClient() {
-        NeoForge.EVENT_BUS.register(this);
+    public RewindWatchClient(IEventBus bus) {
+        bus.addListener(this::registerEntityRenderers);
+        bus.addListener(this::createEntityAttributes);
+        NeoForge.EVENT_BUS.addListener(this::renderLiving);
+        NeoForge.EVENT_BUS.addListener(this::tickPlayer);
     }
 
-    @SubscribeEvent
-    public void renderLiving(RenderLivingEvent.Pre<?, ?> event) {
-        if (
-            event.getEntity().getData(RewindWatchAttachmentTypes.ENTITY_EFFECT) instanceof
-                EntityEffect.Dissolve(var startTick, var endTick, var type, var in)
-        ) {
-            final var currentTick = event.getEntity().level().getGameTime();
+    private void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(RewindWatchEntityTypes.FAKE_PLAYER.get(), FakePlayerEntityRenderer::new);
+    }
+
+    private void createEntityAttributes(EntityAttributeCreationEvent event) {
+        event.put(RewindWatchEntityTypes.FAKE_PLAYER.get(), Player.createAttributes().build());
+    }
+
+    private void renderLiving(RenderLivingEvent.Pre<?, ?> event) {
+        updateDissolveOpacity(
+            event.getEntity(),
+            event.getEntity().getData(RewindWatchAttachmentTypes.ENTITY_EFFECT),
+            event.getPartialTick()
+        );
+    }
+
+    private void tickPlayer(ClientTickEvent.Post event) {
+        final var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        final var animation = player.walkAnimation;
+        player.connection.send(new AnimationStatePayload(new PlayerAnimationState(
+            animation.position(), animation.speed()
+        )));
+    }
+
+    public static RenderType getEffectRenderType(
+        EntityEffect effect, ResourceLocation texture, RenderType defaultRenderType
+    ) {
+        return switch (effect) {
+            case EntityEffect.Simple.NONE -> defaultRenderType;
+            case EntityEffect.Simple.GRAYSCALE -> RewindWatchRenderTypes.entityTranslucentGrayscale(texture);
+            case EntityEffect.Dissolve dissolve -> switch (dissolve.type()) {
+                case TRANSPARENT -> RewindWatchRenderTypes.entityTranslucentDissolve(texture);
+                case GRAYSCALE, TRANSPARENT_GRAYSCALE -> RewindWatchRenderTypes.entityTranslucentDissolveGrayscale(texture);
+            };
+        };
+    }
+
+    public static void updateDissolveOpacity(Entity entity, EntityEffect effect, float partialTick) {
+        if (effect instanceof EntityEffect.Dissolve(var startTick, var endTick, var type, var in)) {
+            final var currentTick = entity.level().getGameTime();
             var progress = Math.clamp(
-                (currentTick - startTick + event.getPartialTick()) / (endTick - startTick), 0f, 1f
+                (currentTick - startTick + partialTick) / (endTick - startTick), 0f, 1f
             );
             if (!in) {
                 progress = 1f - progress;

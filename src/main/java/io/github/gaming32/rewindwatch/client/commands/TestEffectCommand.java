@@ -1,10 +1,10 @@
 package io.github.gaming32.rewindwatch.client.commands;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.RewindWatchAttachmentTypes;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import io.github.gaming32.rewindwatch.EntityEffect;
+import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.world.entity.Entity;

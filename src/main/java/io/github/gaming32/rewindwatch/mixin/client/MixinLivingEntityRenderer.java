@@ -2,9 +2,8 @@ package io.github.gaming32.rewindwatch.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.RewindWatchAttachmentTypes;
-import io.github.gaming32.rewindwatch.client.render.RewindWatchRenderTypes;
+import io.github.gaming32.rewindwatch.client.RewindWatchClient;
+import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -18,15 +17,8 @@ public class MixinLivingEntityRenderer {
     private RenderType useEffectRenderType(
         RenderType original,
         @Local(argsOnly = true) LivingEntity entity,
-        @SuppressWarnings("LocalMayBeArgsOnly") @Local ResourceLocation texture
+        @Local ResourceLocation texture
     ) {
-        return switch (entity.getData(RewindWatchAttachmentTypes.ENTITY_EFFECT)) {
-            case EntityEffect.Simple.NONE -> original;
-            case EntityEffect.Simple.GRAYSCALE -> RewindWatchRenderTypes.entityTranslucentGrayscale(texture);
-            case EntityEffect.Dissolve dissolve -> switch (dissolve.type()) {
-                case TRANSPARENT -> RewindWatchRenderTypes.entityTranslucentDissolve(texture);
-                case GRAYSCALE, TRANSPARENT_GRAYSCALE -> RewindWatchRenderTypes.entityTranslucentDissolveGrayscale(texture);
-            };
-        };
+        return RewindWatchClient.getEffectRenderType(entity.getData(RewindWatchAttachmentTypes.ENTITY_EFFECT), texture, original);
     }
 }

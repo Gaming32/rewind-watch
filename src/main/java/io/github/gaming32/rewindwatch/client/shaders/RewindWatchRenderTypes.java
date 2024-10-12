@@ -1,4 +1,4 @@
-package io.github.gaming32.rewindwatch.client.render;
+package io.github.gaming32.rewindwatch.client.shaders;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;

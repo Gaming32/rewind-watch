@@ -1,4 +1,4 @@
-package io.github.gaming32.rewindwatch.client.render;
+package io.github.gaming32.rewindwatch.client.shaders;
 
 public class RewindWatchRenderState {
     private static float dissolveProgress;

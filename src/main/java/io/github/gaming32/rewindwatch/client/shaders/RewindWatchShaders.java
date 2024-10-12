@@ -1,7 +1,7 @@
-package io.github.gaming32.rewindwatch.client.render;
+package io.github.gaming32.rewindwatch.client.shaders;
 
-import io.github.gaming32.rewindwatch.ResourceLocations;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import io.github.gaming32.rewindwatch.ResourceLocations;
 import io.github.gaming32.rewindwatch.RewindWatch;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.neoforged.api.distmarker.Dist;

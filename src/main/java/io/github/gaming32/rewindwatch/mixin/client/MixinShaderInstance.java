@@ -3,7 +3,7 @@ package io.github.gaming32.rewindwatch.mixin.client;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import io.github.gaming32.rewindwatch.client.render.RewindWatchRenderState;
+import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
