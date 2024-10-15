@@ -1,10 +1,10 @@
 package io.github.gaming32.rewindwatch.entity;
 
 import com.mojang.logging.LogUtils;
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
+import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -55,7 +55,7 @@ public class FakePlayer extends LivingEntity {
 
         setPlayerUuid(Optional.of(entity.getUUID()));
         setPlayerSpeed(entity.getDeltaMovement());
-        setAnimationState(entity.getData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE));
+        entity.getExistingData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE).ifPresent(this::setAnimationState);
     }
 
     @Override

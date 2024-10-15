@@ -1,6 +1,7 @@
 package io.github.gaming32.rewindwatch;
 
-import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;

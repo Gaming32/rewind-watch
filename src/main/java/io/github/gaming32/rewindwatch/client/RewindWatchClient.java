@@ -1,14 +1,14 @@
 package io.github.gaming32.rewindwatch.client;
 
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.ResourceLocations;
 import io.github.gaming32.rewindwatch.RewindWatch;
 import io.github.gaming32.rewindwatch.client.entity.FakePlayerRenderer;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderTypes;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
-import io.github.gaming32.rewindwatch.network.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
+import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;

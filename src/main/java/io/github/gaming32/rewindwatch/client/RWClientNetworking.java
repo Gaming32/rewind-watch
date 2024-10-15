@@ -1,22 +1,18 @@
 package io.github.gaming32.rewindwatch.client;
 
-import com.mojang.logging.LogUtils;
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockMovementPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.slf4j.Logger;
 
 public class RWClientNetworking {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
     public static void handleEntityEffect(ClientboundEntityEffectPayload payload, IPayloadContext context) {
-        final var entity = context.player().level().getEntity(payload.entity());
-        if (entity == null) {
-            LOGGER.warn("Received entity effect for unknown entity {}", payload.entity());
-            return;
-        }
+        final var entity = payload.getEntity(context);
+        if (entity == null) return;
         if (payload.effect() != EntityEffect.Simple.NONE) {
             entity.setData(RewindWatchAttachmentTypes.ENTITY_EFFECT, payload.effect());
         } else {
@@ -26,6 +22,24 @@ public class RWClientNetworking {
         final var minecraft = Minecraft.getInstance();
         if (entity == minecraft.cameraEntity) {
             minecraft.gameRenderer.checkEntityPostEffect(entity);
+        }
+    }
+
+    public static void handleLockMovement(ClientboundLockMovementPayload payload, IPayloadContext context) {
+        context.player().setData(RewindWatchAttachmentTypes.MOVEMENT_LOCKED, payload.lock());
+    }
+
+    public static void handleLockedState(ClientboundLockedStatePayload payload, IPayloadContext context) {
+        final var entity = payload.getEntity(context);
+        if (entity != null) {
+            entity.setData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE, payload.state());
+        }
+    }
+
+    public static void handleClearLockedState(ClientboundClearLockedStatePayload payload, IPayloadContext context) {
+        final var entity = payload.getEntity(context);
+        if (entity != null) {
+            entity.removeData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE);
         }
     }
 }

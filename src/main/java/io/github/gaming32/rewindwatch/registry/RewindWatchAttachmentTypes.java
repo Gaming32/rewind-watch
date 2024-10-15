@@ -1,8 +1,9 @@
 package io.github.gaming32.rewindwatch.registry;
 
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.RewindWatch;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
+import io.github.gaming32.rewindwatch.state.LockedPlayerState;
+import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -23,8 +24,12 @@ public class RewindWatchAttachmentTypes {
     public static final Supplier<AttachmentType<PlayerAnimationState>> PLAYER_ANIMATION_STATE = REGISTER.register(
         "player_animation_state", () -> AttachmentType.builder(() -> PlayerAnimationState.NONE).build()
     );
+
     public static final Supplier<AttachmentType<Boolean>> MOVEMENT_LOCKED = REGISTER.register(
         "movement_locked", () -> AttachmentType.builder(() -> false).build()
+    );
+    public static final Supplier<AttachmentType<LockedPlayerState>> LOCKED_PLAYER_STATE = REGISTER.register(
+        "locked_visual_angle", () -> AttachmentType.builder(() -> LockedPlayerState.NONE).build()
     );
 
     public static void register(IEventBus bus) {

@@ -26,7 +26,7 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerM
     private final FakePlayerModel slimModel;
 
     public FakePlayerRenderer(EntityRendererProvider.Context context) {
-        super(context, new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER), false), 0.5f);
+        super(context, new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER), false), 0f);
         wideModel = (FakePlayerModel)model;
         slimModel = new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
     }
@@ -133,10 +133,5 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerM
 
     @Override
     protected void renderNameTag(@NotNull FakePlayer entity, @NotNull Component displayName, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, float partialTick) {
-    }
-
-    @Override
-    protected float getShadowRadius(@NotNull FakePlayer entity) {
-        return 0f;
     }
 }

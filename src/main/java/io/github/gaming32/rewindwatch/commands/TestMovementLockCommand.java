@@ -16,19 +16,22 @@ public class TestMovementLockCommand {
         dispatcher.register(literal("testmovementlock")
             .then(argument("player", EntityArgument.players())
                 .then(literal("lock")
-                    .executes(ctx -> lockMovement(ctx, true))
+                    .executes(TestMovementLockCommand::lockMovement)
                 )
                 .then(literal("unlock")
-                    .executes(ctx -> lockMovement(ctx, false))
+                    .executes(TestMovementLockCommand::unlockMovement)
                 )
             )
         );
     }
 
-    private static int lockMovement(
-        CommandContext<CommandSourceStack> context, boolean lock
-    ) throws CommandSyntaxException {
-        RWAttachments.lockMovement(context.getSource().getPlayerOrException(), lock);
+    private static int lockMovement(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        RWAttachments.lockMovement(context.getSource().getPlayerOrException());
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int unlockMovement(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        RWAttachments.unlockMovement(context.getSource().getPlayerOrException());
         return Command.SINGLE_SUCCESS;
     }
 }

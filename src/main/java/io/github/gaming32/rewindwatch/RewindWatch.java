@@ -4,9 +4,11 @@ import com.mojang.logging.LogUtils;
 import io.github.gaming32.rewindwatch.client.RWClientNetworking;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.item.RewindWatchItems;
-import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
-import io.github.gaming32.rewindwatch.network.ClientboundLockMovementPayload;
-import io.github.gaming32.rewindwatch.network.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockMovementPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
+import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -43,21 +45,31 @@ public class RewindWatch {
 
     @SubscribeEvent
     public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
-        final var registrar = event.registrar(PROTOCOL_VERSION);
-        registrar.playToClient(
-            ClientboundEntityEffectPayload.TYPE,
-            ClientboundEntityEffectPayload.STREAM_CODEC,
-            RWClientNetworking::handleEntityEffect
-        );
-        registrar.playToClient(
-            ClientboundLockMovementPayload.TYPE,
-            ClientboundLockMovementPayload.STREAM_CODEC,
-            (payload, context) -> context.player().setData(RewindWatchAttachmentTypes.MOVEMENT_LOCKED, payload.lock())
-        );
-        registrar.playToServer(
-            ServerboundAnimationStatePayload.TYPE,
-            ServerboundAnimationStatePayload.STREAM_CODEC,
-            (payload, context) -> context.player().setData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE, payload.state())
-        );
+        event.registrar(PROTOCOL_VERSION)
+            .playToClient(
+                ClientboundEntityEffectPayload.TYPE,
+                ClientboundEntityEffectPayload.STREAM_CODEC,
+                RWClientNetworking::handleEntityEffect
+            )
+            .playToClient(
+                ClientboundLockMovementPayload.TYPE,
+                ClientboundLockMovementPayload.STREAM_CODEC,
+                RWClientNetworking::handleLockMovement
+            )
+            .playToClient(
+                ClientboundLockedStatePayload.TYPE,
+                ClientboundLockedStatePayload.STREAM_CODEC,
+                RWClientNetworking::handleLockedState
+            )
+            .playToClient(
+                ClientboundClearLockedStatePayload.TYPE,
+                ClientboundClearLockedStatePayload.STREAM_CODEC,
+                RWClientNetworking::handleClearLockedState
+            )
+            .playToServer(
+                ServerboundAnimationStatePayload.TYPE,
+                ServerboundAnimationStatePayload.STREAM_CODEC,
+                RWServerNetworking::handleAnimationState
+            );
     }
 }

@@ -1,10 +1,14 @@
 package io.github.gaming32.rewindwatch.util;
 
-import io.github.gaming32.rewindwatch.EntityEffect;
 import io.github.gaming32.rewindwatch.entity.FakePlayer;
-import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
-import io.github.gaming32.rewindwatch.network.ClientboundLockMovementPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockMovementPayload;
+import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
+import io.github.gaming32.rewindwatch.state.LockedPlayerState;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,8 +47,23 @@ public class RWAttachments {
             .orElse(EntityEffect.Simple.NONE);
     }
 
-    public static void lockMovement(ServerPlayer player, boolean lock) {
+    public static void lockMovement(ServerPlayer player) {
+        lockMovement(player, LockedPlayerState.from(player));
+    }
+
+    public static void lockMovement(ServerPlayer player, LockedPlayerState state) {
+        player.setData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE, state);
+        lockMovement(player, true, new ClientboundLockedStatePayload(player.getId(), state));
+    }
+
+    public static void unlockMovement(ServerPlayer player) {
+        player.removeData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE);
+        lockMovement(player, false, new ClientboundClearLockedStatePayload(player.getId()));
+    }
+
+    private static void lockMovement(ServerPlayer player, boolean lock, CustomPacketPayload statePayload) {
         player.setData(RewindWatchAttachmentTypes.MOVEMENT_LOCKED, lock);
-        player.connection.send(new ClientboundLockMovementPayload(lock));
+        PacketDistributor.sendToPlayer(player, new ClientboundLockMovementPayload(lock), statePayload);
+        PacketDistributor.sendToPlayersTrackingEntity(player, statePayload);
     }
 }

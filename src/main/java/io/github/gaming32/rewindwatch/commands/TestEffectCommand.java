@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.github.gaming32.rewindwatch.EntityEffect;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.TimeArgument;

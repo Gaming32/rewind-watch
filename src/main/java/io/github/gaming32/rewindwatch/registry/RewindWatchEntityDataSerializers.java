@@ -1,8 +1,8 @@
 package io.github.gaming32.rewindwatch.registry;
 
-import io.github.gaming32.rewindwatch.EntityEffect;
-import io.github.gaming32.rewindwatch.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.RewindWatch;
+import io.github.gaming32.rewindwatch.state.EntityEffect;
+import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.world.phys.Vec3;
