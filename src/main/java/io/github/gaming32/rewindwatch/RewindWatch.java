@@ -1,6 +1,7 @@
 package io.github.gaming32.rewindwatch;
 
 import com.mojang.logging.LogUtils;
+import io.github.gaming32.rewindwatch.client.RWClientNetworking;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.item.RewindWatchItems;
 import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
@@ -46,18 +47,7 @@ public class RewindWatch {
         registrar.playToClient(
             ClientboundEntityEffectPayload.TYPE,
             ClientboundEntityEffectPayload.STREAM_CODEC,
-            (payload, context) -> {
-                final var entity = context.player().level().getEntity(payload.entity());
-                if (entity == null) {
-                    LOGGER.warn("Received entity effect for unknown entity {}", payload.entity());
-                    return;
-                }
-                if (payload.effect() != EntityEffect.Simple.NONE) {
-                    entity.setData(RewindWatchAttachmentTypes.ENTITY_EFFECT, payload.effect());
-                } else {
-                    entity.removeData(RewindWatchAttachmentTypes.ENTITY_EFFECT);
-                }
-            }
+            RWClientNetworking::handleEntityEffect
         );
         registrar.playToClient(
             ClientboundLockMovementPayload.TYPE,

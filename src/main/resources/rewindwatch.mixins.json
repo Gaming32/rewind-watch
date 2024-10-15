@@ -7,6 +7,8 @@
     "MixinServerGamePacketListenerImpl"
   ],
   "client": [
+    "client.MixinEffectInstance",
+    "client.MixinGameRenderer",
     "client.MixinLivingEntityRenderer",
     "client.MixinLocalPlayer",
     "client.MixinShaderInstance"

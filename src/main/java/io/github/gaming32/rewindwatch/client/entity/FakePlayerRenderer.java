@@ -41,7 +41,7 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerM
         int packedLight
     ) {
         updateModel(entity);
-        RewindWatchClient.updateDissolveOpacity(entity, entity.getCurrentEffect(), partialTick);
+        RewindWatchClient.updateDissolveOpacity(entity, partialTick);
         super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
     }
 

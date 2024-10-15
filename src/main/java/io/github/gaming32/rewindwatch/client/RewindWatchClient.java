@@ -2,6 +2,7 @@ package io.github.gaming32.rewindwatch.client;
 
 import io.github.gaming32.rewindwatch.EntityEffect;
 import io.github.gaming32.rewindwatch.PlayerAnimationState;
+import io.github.gaming32.rewindwatch.ResourceLocations;
 import io.github.gaming32.rewindwatch.RewindWatch;
 import io.github.gaming32.rewindwatch.client.entity.FakePlayerRenderer;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
@@ -22,9 +23,15 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import org.jetbrains.annotations.Nullable;
 
 @Mod(value = RewindWatch.MOD_ID, dist = Dist.CLIENT)
 public class RewindWatchClient {
+    private static final ResourceLocation POST_GRAYSCALE =
+        ResourceLocations.rewindWatch("shaders/post/grayscale.json");
+    private static final ResourceLocation POST_DISSOLVE_GRAYSCALE =
+        ResourceLocations.rewindWatch("shaders/post/dissolve_grayscale.json");
+
     public RewindWatchClient(IEventBus bus) {
         bus.addListener(this::registerEntityRenderers);
         bus.addListener(this::createEntityAttributes);
@@ -43,7 +50,6 @@ public class RewindWatchClient {
     private void renderLiving(RenderLivingEvent.Pre<?, ?> event) {
         updateDissolveOpacity(
             event.getEntity(),
-            RWAttachments.getEntityEffect(event.getEntity()),
             event.getPartialTick()
         );
     }
@@ -70,8 +76,24 @@ public class RewindWatchClient {
         };
     }
 
-    public static void updateDissolveOpacity(Entity entity, EntityEffect effect, float partialTick) {
-        if (effect instanceof EntityEffect.Dissolve(var startTick, var endTick, var type, var in)) {
+    @Nullable
+    public static ResourceLocation getEffectPostShader(EntityEffect effect) {
+        return switch (effect) {
+            case EntityEffect.Simple.GRAYSCALE -> POST_GRAYSCALE;
+            case EntityEffect.Dissolve dissolve -> switch (dissolve.type()) {
+                case GRAYSCALE -> POST_DISSOLVE_GRAYSCALE;
+                case TRANSPARENT_GRAYSCALE -> POST_GRAYSCALE;
+                default -> null;
+            };
+            default -> null;
+        };
+    }
+
+    public static void updateDissolveOpacity(Entity entity, float partialTick) {
+        if (
+            RWAttachments.getEntityEffect(entity) instanceof
+                EntityEffect.Dissolve(var startTick, var endTick, var type, var in)
+        ) {
             final var currentTick = entity.level().getGameTime();
             var progress = Math.clamp(
                 (currentTick - startTick + partialTick) / (endTick - startTick), 0f, 1f

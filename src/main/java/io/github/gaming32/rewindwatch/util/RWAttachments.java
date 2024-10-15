@@ -1,6 +1,7 @@
 package io.github.gaming32.rewindwatch.util;
 
 import io.github.gaming32.rewindwatch.EntityEffect;
+import io.github.gaming32.rewindwatch.entity.FakePlayer;
 import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
 import io.github.gaming32.rewindwatch.network.ClientboundLockMovementPayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
@@ -16,6 +17,10 @@ public class RWAttachments {
         if (entity.level().isClientSide) {
             throw new IllegalStateException("Cannot use setEntityEffect on client");
         }
+        if (entity instanceof FakePlayer fakePlayer) {
+            fakePlayer.setCurrentEffect(effect);
+            return;
+        }
         final var old = effect != EntityEffect.Simple.NONE
             ? entity.setData(RewindWatchAttachmentTypes.ENTITY_EFFECT, effect)
             : entity.removeData(RewindWatchAttachmentTypes.ENTITY_EFFECT);
@@ -29,6 +34,9 @@ public class RWAttachments {
     public static EntityEffect getEntityEffect(Entity entity) {
         if (!(entity instanceof LivingEntity)) {
             return EntityEffect.Simple.NONE;
+        }
+        if (entity instanceof FakePlayer fakePlayer) {
+            return fakePlayer.getCurrentEffect();
         }
         return entity
             .getExistingData(RewindWatchAttachmentTypes.ENTITY_EFFECT)
