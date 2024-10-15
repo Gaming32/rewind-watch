@@ -23,6 +23,9 @@ public class RewindWatchAttachmentTypes {
     public static final Supplier<AttachmentType<PlayerAnimationState>> PLAYER_ANIMATION_STATE = REGISTER.register(
         "player_animation_state", () -> AttachmentType.builder(() -> PlayerAnimationState.NONE).build()
     );
+    public static final Supplier<AttachmentType<Boolean>> MOVEMENT_LOCKED = REGISTER.register(
+        "movement_locked", () -> AttachmentType.builder(() -> false).build()
+    );
 
     public static void register(IEventBus bus) {
         REGISTER.register(bus);

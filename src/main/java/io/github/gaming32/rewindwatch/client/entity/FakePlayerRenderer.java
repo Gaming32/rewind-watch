@@ -3,7 +3,7 @@ package io.github.gaming32.rewindwatch.client.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import io.github.gaming32.rewindwatch.client.RewindWatchClient;
-import io.github.gaming32.rewindwatch.entity.FakePlayerEntity;
+import io.github.gaming32.rewindwatch.entity.FakePlayer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
@@ -21,11 +21,11 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FakePlayerEntityRenderer extends LivingEntityRenderer<FakePlayerEntity, PlayerModel<FakePlayerEntity>> {
+public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerModel<FakePlayer>> {
     private final FakePlayerModel wideModel;
     private final FakePlayerModel slimModel;
 
-    public FakePlayerEntityRenderer(EntityRendererProvider.Context context) {
+    public FakePlayerRenderer(EntityRendererProvider.Context context) {
         super(context, new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER), false), 0.5f);
         wideModel = (FakePlayerModel)model;
         slimModel = new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
@@ -33,7 +33,7 @@ public class FakePlayerEntityRenderer extends LivingEntityRenderer<FakePlayerEnt
 
     @Override
     public void render(
-        @NotNull FakePlayerEntity entity,
+        @NotNull FakePlayer entity,
         float entityYaw,
         float partialTick,
         @NotNull PoseStack poseStack,
@@ -46,20 +46,20 @@ public class FakePlayerEntityRenderer extends LivingEntityRenderer<FakePlayerEnt
     }
 
     @Override
-    protected @Nullable RenderType getRenderType(@NotNull FakePlayerEntity entity, boolean bodyVisible, boolean translucent, boolean glowing) {
+    protected @Nullable RenderType getRenderType(@NotNull FakePlayer entity, boolean bodyVisible, boolean translucent, boolean glowing) {
         final var texture = getTextureLocation(entity);
         final var result = RewindWatchClient.getEffectRenderType(entity.getCurrentEffect(), texture, null);
         return result != null ? result : model.renderType(texture);
     }
 
     @Override
-    public @NotNull Vec3 getRenderOffset(FakePlayerEntity entity, float partialTicks) {
+    public @NotNull Vec3 getRenderOffset(FakePlayer entity, float partialTicks) {
         return entity.isCrouching()
             ? new Vec3(0.0, (double)(entity.getScale() * -2f) / 16.0, 0.0)
             : super.getRenderOffset(entity, partialTicks);
     }
 
-    private void updateModel(FakePlayerEntity entity) {
+    private void updateModel(FakePlayer entity) {
         model = switch (getSkin(entity).model()) {
             case WIDE -> wideModel;
             case SLIM -> slimModel;
@@ -69,11 +69,11 @@ public class FakePlayerEntityRenderer extends LivingEntityRenderer<FakePlayerEnt
 
     @NotNull
     @Override
-    public ResourceLocation getTextureLocation(@NotNull FakePlayerEntity entity) {
+    public ResourceLocation getTextureLocation(@NotNull FakePlayer entity) {
         return getSkin(entity).texture();
     }
 
-    private PlayerSkin getSkin(FakePlayerEntity entity) {
+    private PlayerSkin getSkin(FakePlayer entity) {
         final var uuid = entity.getPlayerUuid().orElse(null);
         if (uuid == null) {
             return DefaultPlayerSkin.get(Util.NIL_UUID);
@@ -87,13 +87,13 @@ public class FakePlayerEntityRenderer extends LivingEntityRenderer<FakePlayerEnt
     }
 
     @Override
-    protected void scale(@NotNull FakePlayerEntity livingEntity, PoseStack poseStack, float partialTickTime) {
+    protected void scale(@NotNull FakePlayer livingEntity, PoseStack poseStack, float partialTickTime) {
         poseStack.scale(15 / 16f, 15 / 16f, 15 / 16f);
     }
 
     // From PlayerRenderer
     @Override
-    protected void setupRotations(FakePlayerEntity entity, @NotNull PoseStack poseStack, float bob, float yBodyRot, float partialTick, float scale) {
+    protected void setupRotations(FakePlayer entity, @NotNull PoseStack poseStack, float bob, float yBodyRot, float partialTick, float scale) {
         float f = entity.getSwimAmount(partialTick);
         float f1 = entity.getViewXRot(partialTick);
         if (entity.isFallFlying()) {
@@ -127,11 +127,16 @@ public class FakePlayerEntityRenderer extends LivingEntityRenderer<FakePlayerEnt
     }
 
     @Override
-    protected float getBob(@NotNull FakePlayerEntity livingBase, float partialTick) {
+    protected float getBob(@NotNull FakePlayer livingBase, float partialTick) {
         return 0f;
     }
 
     @Override
-    protected void renderNameTag(@NotNull FakePlayerEntity entity, @NotNull Component displayName, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, float partialTick) {
+    protected void renderNameTag(@NotNull FakePlayer entity, @NotNull Component displayName, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, float partialTick) {
+    }
+
+    @Override
+    protected float getShadowRadius(@NotNull FakePlayer entity) {
+        return 0f;
     }
 }

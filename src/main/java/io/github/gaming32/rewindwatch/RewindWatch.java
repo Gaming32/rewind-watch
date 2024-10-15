@@ -3,18 +3,22 @@ package io.github.gaming32.rewindwatch;
 import com.mojang.logging.LogUtils;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.item.RewindWatchItems;
-import io.github.gaming32.rewindwatch.network.AnimationStatePayload;
+import io.github.gaming32.rewindwatch.network.ClientboundEntityEffectPayload;
+import io.github.gaming32.rewindwatch.network.ClientboundLockMovementPayload;
+import io.github.gaming32.rewindwatch.network.ServerboundAnimationStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 
 @Mod(RewindWatch.MOD_ID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class RewindWatch {
     public static final String MOD_ID = "rewindwatch";
     public static final String PROTOCOL_VERSION = "1";
@@ -25,24 +29,44 @@ public class RewindWatch {
         RewindWatchEntityDataSerializers.register(bus);
         RewindWatchItems.register(bus);
         RewindWatchEntityTypes.register(bus);
-        bus.register(this);
 
         LOGGER.info("Rewinding time...");
     }
 
     @SubscribeEvent
-    public void buildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
+    public static void buildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(RewindWatchItems.REWIND_WATCH);
         }
     }
 
     @SubscribeEvent
-    public void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
+    public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
         final var registrar = event.registrar(PROTOCOL_VERSION);
+        registrar.playToClient(
+            ClientboundEntityEffectPayload.TYPE,
+            ClientboundEntityEffectPayload.STREAM_CODEC,
+            (payload, context) -> {
+                final var entity = context.player().level().getEntity(payload.entity());
+                if (entity == null) {
+                    LOGGER.warn("Received entity effect for unknown entity {}", payload.entity());
+                    return;
+                }
+                if (payload.effect() != EntityEffect.Simple.NONE) {
+                    entity.setData(RewindWatchAttachmentTypes.ENTITY_EFFECT, payload.effect());
+                } else {
+                    entity.removeData(RewindWatchAttachmentTypes.ENTITY_EFFECT);
+                }
+            }
+        );
+        registrar.playToClient(
+            ClientboundLockMovementPayload.TYPE,
+            ClientboundLockMovementPayload.STREAM_CODEC,
+            (payload, context) -> context.player().setData(RewindWatchAttachmentTypes.MOVEMENT_LOCKED, payload.lock())
+        );
         registrar.playToServer(
-            AnimationStatePayload.TYPE,
-            AnimationStatePayload.STREAM_CODEC,
+            ServerboundAnimationStatePayload.TYPE,
+            ServerboundAnimationStatePayload.STREAM_CODEC,
             (payload, context) -> context.player().setData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE, payload.state())
         );
     }

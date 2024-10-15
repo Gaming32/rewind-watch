@@ -4,9 +4,11 @@
   "package": "io.github.gaming32.rewindwatch.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MixinServerGamePacketListenerImpl"
   ],
   "client": [
     "client.MixinLivingEntityRenderer",
+    "client.MixinLocalPlayer",
     "client.MixinShaderInstance"
   ],
   "injectors": {

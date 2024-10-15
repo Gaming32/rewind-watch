@@ -3,12 +3,12 @@ package io.github.gaming32.rewindwatch.client;
 import io.github.gaming32.rewindwatch.EntityEffect;
 import io.github.gaming32.rewindwatch.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.RewindWatch;
-import io.github.gaming32.rewindwatch.client.entity.FakePlayerEntityRenderer;
+import io.github.gaming32.rewindwatch.client.entity.FakePlayerRenderer;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderTypes;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
-import io.github.gaming32.rewindwatch.network.AnimationStatePayload;
-import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
+import io.github.gaming32.rewindwatch.network.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.util.RWAttachments;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +33,7 @@ public class RewindWatchClient {
     }
 
     private void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(RewindWatchEntityTypes.FAKE_PLAYER.get(), FakePlayerEntityRenderer::new);
+        event.registerEntityRenderer(RewindWatchEntityTypes.FAKE_PLAYER.get(), FakePlayerRenderer::new);
     }
 
     private void createEntityAttributes(EntityAttributeCreationEvent event) {
@@ -43,7 +43,7 @@ public class RewindWatchClient {
     private void renderLiving(RenderLivingEvent.Pre<?, ?> event) {
         updateDissolveOpacity(
             event.getEntity(),
-            event.getEntity().getData(RewindWatchAttachmentTypes.ENTITY_EFFECT),
+            RWAttachments.getEntityEffect(event.getEntity()),
             event.getPartialTick()
         );
     }
@@ -52,7 +52,7 @@ public class RewindWatchClient {
         final var player = Minecraft.getInstance().player;
         if (player == null) return;
         final var animation = player.walkAnimation;
-        player.connection.send(new AnimationStatePayload(new PlayerAnimationState(
+        player.connection.send(new ServerboundAnimationStatePayload(new PlayerAnimationState(
             animation.position(), animation.speed()
         )));
     }

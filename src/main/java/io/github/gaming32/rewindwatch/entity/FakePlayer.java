@@ -28,19 +28,19 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
-public class FakePlayerEntity extends LivingEntity {
+public class FakePlayer extends LivingEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final EntityDataAccessor<Optional<UUID>> DATA_PLAYER_UUID =
-        SynchedEntityData.defineId(FakePlayerEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+        SynchedEntityData.defineId(FakePlayer.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Vec3> DATA_PLAYER_SPEED =
-        SynchedEntityData.defineId(FakePlayerEntity.class, RewindWatchEntityDataSerializers.VEC3.get());
+        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.VEC3.get());
     private static final EntityDataAccessor<PlayerAnimationState> DATA_ANIMATION_STATE =
-        SynchedEntityData.defineId(FakePlayerEntity.class, RewindWatchEntityDataSerializers.PLAYER_ANIMATION_STATE.get());
+        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.PLAYER_ANIMATION_STATE.get());
     private static final EntityDataAccessor<EntityEffect> DATA_CURRENT_EFFECT =
-        SynchedEntityData.defineId(FakePlayerEntity.class, RewindWatchEntityDataSerializers.ENTITY_EFFECT.get());
+        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.ENTITY_EFFECT.get());
 
-    public FakePlayerEntity(EntityType<? extends FakePlayerEntity> entityType, Level level) {
+    public FakePlayer(EntityType<? extends FakePlayer> entityType, Level level) {
         super(entityType, level);
     }
 

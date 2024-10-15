@@ -11,7 +11,9 @@ public class RewindWatchCommands {
     @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent event) {
         if (SharedConstants.IS_RUNNING_IN_IDE) {
+            TestEffectCommand.register(event.getDispatcher());
             TestFakePlayerCommand.register(event.getDispatcher());
+            TestMovementLockCommand.register(event.getDispatcher());
         }
     }
 }

@@ -14,9 +14,9 @@ public class RewindWatchEntityTypes {
     private static final DeferredRegister<EntityType<?>> REGISTER =
         DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, RewindWatch.MOD_ID);
 
-    public static final Supplier<EntityType<FakePlayerEntity>> FAKE_PLAYER = REGISTER.register(
+    public static final Supplier<EntityType<FakePlayer>> FAKE_PLAYER = REGISTER.register(
         "fake_player", () ->
-            EntityType.Builder.of(FakePlayerEntity::new, MobCategory.MISC)
+            EntityType.Builder.of(FakePlayer::new, MobCategory.MISC)
                 .sized(0.6f, 1.8f)
                 .eyeHeight(1.62f)
                 .vehicleAttachment(Player.DEFAULT_VEHICLE_ATTACHMENT)
