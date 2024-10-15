@@ -17,7 +17,7 @@ public class MixinServerGamePacketListenerImpl {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void notFlyingWhenLocked(CallbackInfo ci) {
-        if (player.getData(RewindWatchAttachmentTypes.MOVEMENT_LOCKED)) {
+        if (player.hasData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE)) {
             clientIsFloating = false;
         }
     }

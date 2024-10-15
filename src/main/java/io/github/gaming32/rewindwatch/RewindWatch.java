@@ -6,7 +6,6 @@ import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.item.RewindWatchItems;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
-import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockMovementPayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
 import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
@@ -50,11 +49,6 @@ public class RewindWatch {
                 ClientboundEntityEffectPayload.TYPE,
                 ClientboundEntityEffectPayload.STREAM_CODEC,
                 RWClientNetworking::handleEntityEffect
-            )
-            .playToClient(
-                ClientboundLockMovementPayload.TYPE,
-                ClientboundLockMovementPayload.STREAM_CODEC,
-                RWClientNetworking::handleLockMovement
             )
             .playToClient(
                 ClientboundLockedStatePayload.TYPE,

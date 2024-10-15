@@ -7,7 +7,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 public class RWUtils {
     public static final StreamCodec<ByteBuf, Vec3> VEC3_STREAM_CODEC = StreamCodec.composite(
@@ -28,5 +32,13 @@ public class RWUtils {
         list.add(DoubleTag.valueOf(value.y));
         list.add(DoubleTag.valueOf(value.z));
         tag.put(key, list);
+    }
+
+    public static void sendPackets(ServerPlayer player, List<CustomPacketPayload> packets) {
+        switch (packets.size()) {
+            case 0 -> {}
+            case 1 -> player.connection.send(packets.getFirst());
+            default -> player.connection.sendBundled(packets);
+        }
     }
 }

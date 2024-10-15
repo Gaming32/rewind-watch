@@ -7,6 +7,7 @@ import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderTypes;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
@@ -16,10 +17,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -37,6 +41,9 @@ public class RewindWatchClient {
         bus.addListener(this::createEntityAttributes);
         NeoForge.EVENT_BUS.addListener(this::renderLiving);
         NeoForge.EVENT_BUS.addListener(this::tickPlayer);
+        // HIGH so we don't have mods triggering actual behaviors before we cancel
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, this::interactionTriggered);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, this::renderHighlight);
     }
 
     private void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -61,6 +68,21 @@ public class RewindWatchClient {
         player.connection.send(new ServerboundAnimationStatePayload(new PlayerAnimationState(
             animation.position(), animation.speed()
         )));
+    }
+
+    private void interactionTriggered(InputEvent.InteractionKeyMappingTriggered event) {
+        final var player = Minecraft.getInstance().player;
+        if (player != null && player.hasData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE)) {
+            event.setSwingHand(false);
+            event.setCanceled(true);
+        }
+    }
+
+    private void renderHighlight(RenderHighlightEvent.Block event) {
+        final var player = Minecraft.getInstance().player;
+        if (player != null && player.hasData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE)) {
+            event.setCanceled(true);
+        }
     }
 
     public static RenderType getEffectRenderType(
