@@ -17,18 +17,23 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerModel<FakePlayer>> {
+import java.util.function.Predicate;
+
+public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, FakePlayerModel> {
     private final FakePlayerModel wideModel;
     private final FakePlayerModel slimModel;
 
     public FakePlayerRenderer(EntityRendererProvider.Context context) {
         super(context, new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER), false), 0f);
-        wideModel = (FakePlayerModel)model;
+        wideModel = model;
         slimModel = new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
+
+        addLayer(new FakeCapeLayer(this));
     }
 
     @Override
@@ -48,8 +53,7 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerM
     @Override
     protected @Nullable RenderType getRenderType(@NotNull FakePlayer entity, boolean bodyVisible, boolean translucent, boolean glowing) {
         final var texture = getTextureLocation(entity);
-        final var result = RewindWatchClient.getEffectRenderType(entity.getCurrentEffect(), texture, null);
-        return result != null ? result : model.renderType(texture);
+        return RewindWatchClient.getEffectRenderType(entity.getCurrentEffect(), texture, model.renderType(texture));
     }
 
     @Override
@@ -64,7 +68,17 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerM
             case WIDE -> wideModel;
             case SLIM -> slimModel;
         };
+        updateModelCustomization(model, entity::isModelPartShown);
         model.crouching = entity.isCrouching();
+    }
+
+    public static void updateModelCustomization(PlayerModel<?> model, Predicate<PlayerModelPart> checker) {
+        model.hat.visible = checker.test(PlayerModelPart.HAT);
+        model.jacket.visible = checker.test(PlayerModelPart.JACKET);
+        model.leftPants.visible = checker.test(PlayerModelPart.LEFT_PANTS_LEG);
+        model.rightPants.visible = checker.test(PlayerModelPart.RIGHT_PANTS_LEG);
+        model.leftSleeve.visible = checker.test(PlayerModelPart.LEFT_SLEEVE);
+        model.rightSleeve.visible = checker.test(PlayerModelPart.RIGHT_SLEEVE);
     }
 
     @NotNull
@@ -73,7 +87,7 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, PlayerM
         return getSkin(entity).texture();
     }
 
-    private PlayerSkin getSkin(FakePlayer entity) {
+    public static PlayerSkin getSkin(FakePlayer entity) {
         final var uuid = entity.getPlayerUuid().orElse(null);
         if (uuid == null) {
             return DefaultPlayerSkin.get(Util.NIL_UUID);

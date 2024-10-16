@@ -7,6 +7,7 @@
     "MixinServerGamePacketListenerImpl"
   ],
   "client": [
+    "client.MixinCapeLayer",
     "client.MixinEffectInstance",
     "client.MixinGameRenderer",
     "client.MixinHumanoidModel",
