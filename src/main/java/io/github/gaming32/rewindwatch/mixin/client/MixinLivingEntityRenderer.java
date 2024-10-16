@@ -59,6 +59,7 @@ public class MixinLivingEntityRenderer {
         }
         final var facing = state.facing();
         final var cloak = state.cloak();
+        final var poseData = state.poseData();
 
         if (model instanceof PlayerModel<?> playerModel) {
             FakePlayerRenderer.updateModelCustomization(playerModel, state.modelCustomization()::contains);
@@ -68,6 +69,8 @@ public class MixinLivingEntityRenderer {
         final var xRot = entity.getXRot();
         final var yBodyRot = entity.yBodyRot;
         final var yHeadRot = entity.yHeadRot;
+        final var fallFlyTicks = entity.fallFlyTicks;
+        final var swimAmount = entity.swimAmount;
         final var xCloak = player.xCloak;
         final var yCloak = player.yCloak;
         final var zCloak = player.zCloak;
@@ -76,6 +79,8 @@ public class MixinLivingEntityRenderer {
             entity.setXRot(entity.xRotO = facing.x());
             entity.yBodyRot = entity.yBodyRotO = facing.bodyY();
             entity.yHeadRot = entity.yHeadRotO = facing.headY();
+            entity.fallFlyTicks = poseData.fallFlyTicks();
+            entity.swimAmount = entity.swimAmountO = poseData.swimAmount();
             player.xCloak = player.xCloakO = cloak.x;
             player.yCloak = player.yCloakO = cloak.y;
             player.zCloak = player.zCloakO = cloak.z;
@@ -85,6 +90,8 @@ public class MixinLivingEntityRenderer {
             entity.setXRot(xRot);
             entity.yBodyRot = yBodyRot;
             entity.yHeadRot = yHeadRot;
+            entity.fallFlyTicks = fallFlyTicks;
+            entity.swimAmount = swimAmount;
             player.xCloak = xCloak;
             player.yCloak = yCloak;
             player.zCloak = zCloak;

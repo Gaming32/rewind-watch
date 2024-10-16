@@ -3,6 +3,7 @@ package io.github.gaming32.rewindwatch.registry;
 import io.github.gaming32.rewindwatch.RewindWatch;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
+import io.github.gaming32.rewindwatch.state.PoseData;
 import io.github.gaming32.rewindwatch.util.RWStreamCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.world.phys.Vec3;
@@ -24,6 +25,9 @@ public class RewindWatchEntityDataSerializers {
     );
     public static final Supplier<EntityDataSerializer<PlayerAnimationState>> PLAYER_ANIMATION_STATE = REGISTER.register(
         "player_animation_state", () -> EntityDataSerializer.forValueType(PlayerAnimationState.STREAM_CODEC)
+    );
+    public static final Supplier<EntityDataSerializer<PoseData>> POSE_DATA = REGISTER.register(
+        "pose_data", () -> EntityDataSerializer.forValueType(PoseData.STREAM_CODEC)
     );
 
     public static void register(IEventBus bus) {

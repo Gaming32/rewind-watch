@@ -19,7 +19,7 @@ public class RWClientNetworking {
         }
 
         final var minecraft = Minecraft.getInstance();
-        if (entity == minecraft.cameraEntity) {
+        if (entity == minecraft.cameraEntity && !minecraft.gameRenderer.getMainCamera().isDetached()) {
             minecraft.gameRenderer.checkEntityPostEffect(entity);
         }
     }

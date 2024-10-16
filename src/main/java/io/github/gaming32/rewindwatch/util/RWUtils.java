@@ -6,11 +6,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class RWUtils {
@@ -55,5 +61,15 @@ public class RWUtils {
             result |= part.getMask();
         }
         return result;
+    }
+
+    public static Optional<Level> getLevel(IAttachmentHolder holder) {
+        return Optional.ofNullable(switch (holder) {
+            case BlockEntity blockEntity -> blockEntity.getLevel();
+            case ChunkAccess chunkAccess -> chunkAccess.getLevel();
+            case Entity entity -> entity.level();
+            case Level level -> level;
+            default -> null;
+        });
     }
 }

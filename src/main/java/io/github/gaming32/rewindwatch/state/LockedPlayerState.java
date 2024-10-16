@@ -21,10 +21,15 @@ public record LockedPlayerState(
     LivingFacingAngles facing,
     PlayerAnimationState animation,
     Set<PlayerModelPart> modelCustomization,
-    Vec3 cloak
+    Vec3 cloak,
+    PoseData poseData
 ) {
     public static final LockedPlayerState NONE = new LockedPlayerState(
-        LivingFacingAngles.ORIGIN, PlayerAnimationState.NONE, EnumSet.allOf(PlayerModelPart.class), Vec3.ZERO
+        LivingFacingAngles.ORIGIN,
+        PlayerAnimationState.NONE,
+        EnumSet.allOf(PlayerModelPart.class),
+        Vec3.ZERO,
+        PoseData.NONE
     );
 
     public static final Codec<LockedPlayerState> CODEC = RecordCodecBuilder.create(
@@ -36,7 +41,8 @@ public record LockedPlayerState(
             NeoForgeExtraCodecs.setOf(RWCodecs.PLAYER_MODEL_PART)
                 .optionalFieldOf("model_customization", EnumSet.allOf(PlayerModelPart.class))
                 .forGetter(LockedPlayerState::modelCustomization),
-            Vec3.CODEC.optionalFieldOf("cloak", Vec3.ZERO).forGetter(LockedPlayerState::cloak)
+            Vec3.CODEC.optionalFieldOf("cloak", Vec3.ZERO).forGetter(LockedPlayerState::cloak),
+            PoseData.CODEC.optionalFieldOf("pose_data", PoseData.NONE).forGetter(LockedPlayerState::poseData)
         ).apply(instance, LockedPlayerState::new)
     );
     public static final StreamCodec<ByteBuf, LockedPlayerState> STREAM_CODEC = StreamCodec.composite(
@@ -44,6 +50,7 @@ public record LockedPlayerState(
         PlayerAnimationState.STREAM_CODEC, LockedPlayerState::animation,
         RWStreamCodecs.PLAYER_MODEL_PART_SET, LockedPlayerState::modelCustomization,
         RWStreamCodecs.VEC3, LockedPlayerState::cloak,
+        PoseData.STREAM_CODEC, LockedPlayerState::poseData,
         LockedPlayerState::new
     );
 
@@ -52,7 +59,8 @@ public record LockedPlayerState(
             LivingFacingAngles.from(player),
             player.getData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE),
             RWUtils.unpackModelCustomization(player.getEntityData().get(Player.DATA_PLAYER_MODE_CUSTOMISATION)),
-            new Vec3(player.xCloak, player.yCloak, player.zCloak)
+            new Vec3(player.xCloak, player.yCloak, player.zCloak),
+            new PoseData(player.getFallFlyingTicks(), player.getSwimAmount(1f))
         );
     }
 }

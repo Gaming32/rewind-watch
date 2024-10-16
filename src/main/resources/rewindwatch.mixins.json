@@ -9,6 +9,7 @@
   "client": [
     "client.MixinCapeLayer",
     "client.MixinEffectInstance",
+    "client.MixinElytraLayer",
     "client.MixinGameRenderer",
     "client.MixinHumanoidModel",
     "client.MixinLivingEntityRenderer",

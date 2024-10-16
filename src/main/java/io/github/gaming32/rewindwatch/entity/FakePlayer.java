@@ -5,10 +5,12 @@ import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
+import io.github.gaming32.rewindwatch.state.PoseData;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -18,11 +20,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -30,14 +35,12 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
-public class FakePlayer extends LivingEntity {
+public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final byte DEFAULT_PLAYER_MODEL_CUSTOMIZATION = (byte)((1 << PlayerModelPart.values().length) - 1);
 
     private static final EntityDataAccessor<Optional<UUID>> DATA_PLAYER_UUID =
         SynchedEntityData.defineId(FakePlayer.class, EntityDataSerializers.OPTIONAL_UUID);
-    private static final EntityDataAccessor<Vec3> DATA_PLAYER_SPEED =
-        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.VEC3.get());
     private static final EntityDataAccessor<PlayerAnimationState> DATA_ANIMATION_STATE =
         SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.PLAYER_ANIMATION_STATE.get());
     private static final EntityDataAccessor<EntityEffect> DATA_CURRENT_EFFECT =
@@ -46,6 +49,10 @@ public class FakePlayer extends LivingEntity {
         SynchedEntityData.defineId(FakePlayer.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Vec3> DATA_CLOAK =
         SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.VEC3.get());
+    private static final EntityDataAccessor<PoseData> DATA_POSE_DATA =
+        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.POSE_DATA.get());
+    private static final EntityDataAccessor<Boolean> DATA_HAS_ELYTRA =
+        SynchedEntityData.defineId(FakePlayer.class, EntityDataSerializers.BOOLEAN);
 
     public FakePlayer(EntityType<? extends FakePlayer> entityType, Level level) {
         super(entityType, level);
@@ -61,34 +68,40 @@ public class FakePlayer extends LivingEntity {
         setSharedFlag(FLAG_FALL_FLYING, entity.isFallFlying());
 
         setPlayerUuid(Optional.of(entity.getUUID()));
-        setPlayerSpeed(entity.getDeltaMovement());
+        setDeltaMovement(entity.getDeltaMovement());
         entity.getExistingData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE).ifPresent(this::setAnimationState);
         if (entity instanceof Player player) {
             setModelCustomization(player.getEntityData().get(Player.DATA_PLAYER_MODE_CUSTOMISATION));
             setCloak(new Vec3(player.xCloak, player.yCloak, player.zCloak));
         }
+        setPoseData(PoseData.fromEntity(entity));
+        setHasElytra(entity.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA));
     }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_PLAYER_UUID, Optional.empty());
-        builder.define(DATA_PLAYER_SPEED, Vec3.ZERO);
         builder.define(DATA_ANIMATION_STATE, PlayerAnimationState.NONE);
         builder.define(DATA_CURRENT_EFFECT, EntityEffect.Simple.GRAYSCALE);
         builder.define(DATA_MODEL_CUSTOMIZATION, DEFAULT_PLAYER_MODEL_CUSTOMIZATION);
         builder.define(DATA_CLOAK, Vec3.ZERO);
+        builder.define(DATA_POSE_DATA, PoseData.NONE);
+        builder.define(DATA_HAS_ELYTRA, false);
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag compound) {
         super.readAdditionalSaveData(compound);
+        setPose(Pose.BY_ID.apply(compound.getByte("pose")));
+        setYBodyRot(compound.getFloat("body_rot"));
+        setYHeadRot(compound.getFloat("head_rot"));
+
         if (compound.hasUUID("player_uuid")) {
             setPlayerUuid(Optional.of(compound.getUUID("player_uuid")));
         } else {
             setPlayerUuid(Optional.empty());
         }
-        setPlayerSpeed(RWUtils.getVec3(compound, "player_speed"));
         PlayerAnimationState.CODEC.parse(NbtOps.INSTANCE, compound.get("animation"))
             .resultOrPartial(Util.prefix("Failed to parse PlayerAnimationState: ", LOGGER::error))
             .ifPresent(this::setAnimationState);
@@ -97,17 +110,38 @@ public class FakePlayer extends LivingEntity {
             .ifPresent(this::setCurrentEffect);
         setModelCustomization(compound.getByte("model_customization"));
         setCloak(RWUtils.getVec3(compound, "cloak"));
+        PoseData.CODEC.parse(NbtOps.INSTANCE, compound.get("pose_data"))
+            .resultOrPartial(Util.prefix("Failed to parse PoseData: ", LOGGER::error))
+            .ifPresent(this::setPoseData);
+        setHasElytra(compound.getBoolean("has_elytra"));
     }
 
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
+        compound.putByte("pose", (byte)getPose().id());
+        compound.putFloat("body_rot", yBodyRot);
+        compound.putFloat("head_rot", yHeadRot);
+
         getPlayerUuid().ifPresent(uuid -> compound.putUUID("player_uuid", uuid));
-        RWUtils.putVec3(compound, "player_speed", getPlayerSpeed());
         compound.put("animation", PlayerAnimationState.CODEC.encodeStart(NbtOps.INSTANCE, getAnimationState()).getOrThrow());
         compound.put("current_effect", EntityEffect.CODEC.encodeStart(NbtOps.INSTANCE, getCurrentEffect()).getOrThrow());
         compound.putByte("model_customization", getModelCustomization());
         RWUtils.putVec3(compound, "cloak", getCloak());
+        compound.put("pose_data", PoseData.CODEC.encodeStart(NbtOps.INSTANCE, getPoseData()).getOrThrow());
+        compound.putBoolean("has_elytra", getHasElytra());
+    }
+
+    @Override
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
+        buffer.writeFloat(yBodyRot);
+        buffer.writeFloat(yHeadRot);
+    }
+
+    @Override
+    public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
+        yBodyRot = yBodyRotO = additionalData.readFloat();
+        yHeadRot = yHeadRotO = additionalData.readFloat();
     }
 
     @Override
@@ -158,6 +192,23 @@ public class FakePlayer extends LivingEntity {
         ) {
             discard();
         }
+        updateFluidHeightAndDoFluidPushing();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation") // The deprecation indicates that we shouldn't call it, not we shouldn't override it
+    public boolean isPushedByFluid() {
+        return false;
+    }
+
+    @Override
+    public int getFallFlyingTicks() {
+        return getPoseData().fallFlyTicks();
+    }
+
+    @Override
+    public float getSwimAmount(float partialTicks) {
+        return getPoseData().swimAmount();
     }
 
     public Optional<UUID> getPlayerUuid() {
@@ -166,14 +217,6 @@ public class FakePlayer extends LivingEntity {
 
     public void setPlayerUuid(Optional<UUID> playerUuid) {
         entityData.set(DATA_PLAYER_UUID, playerUuid);
-    }
-
-    public Vec3 getPlayerSpeed() {
-        return entityData.get(DATA_PLAYER_SPEED);
-    }
-
-    public void setPlayerSpeed(Vec3 speed) {
-        entityData.set(DATA_PLAYER_SPEED, speed);
     }
 
     public PlayerAnimationState getAnimationState() {
@@ -210,5 +253,21 @@ public class FakePlayer extends LivingEntity {
 
     public void setCloak(Vec3 cloak) {
         entityData.set(DATA_CLOAK, cloak);
+    }
+
+    public PoseData getPoseData() {
+        return entityData.get(DATA_POSE_DATA);
+    }
+
+    public void setPoseData(PoseData poseData) {
+        entityData.set(DATA_POSE_DATA, poseData);
+    }
+
+    public boolean getHasElytra() {
+        return entityData.get(DATA_HAS_ELYTRA);
+    }
+
+    public void setHasElytra(boolean hasElytra) {
+        entityData.set(DATA_HAS_ELYTRA, hasElytra);
     }
 }

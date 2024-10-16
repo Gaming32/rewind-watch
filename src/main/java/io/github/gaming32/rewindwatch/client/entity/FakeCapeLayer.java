@@ -12,10 +12,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.PlayerModelPart;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
 public class FakeCapeLayer extends RenderLayer<FakePlayer, FakePlayerModel> {
@@ -39,8 +36,7 @@ public class FakeCapeLayer extends RenderLayer<FakePlayer, FakePlayerModel> {
         if (!fakePlayer.isInvisible() && fakePlayer.isModelPartShown(PlayerModelPart.CAPE)) {
             PlayerSkin playerskin = FakePlayerRenderer.getSkin(fakePlayer);
             if (playerskin.capeTexture() != null) {
-                ItemStack itemstack = fakePlayer.getItemBySlot(EquipmentSlot.CHEST);
-                if (!itemstack.is(Items.ELYTRA)) {
+                if (!fakePlayer.getHasElytra()) {
                     poseStack.pushPose();
                     poseStack.translate(0.0F, 0.0F, 0.125F);
                     final var cloak = fakePlayer.getCloak();

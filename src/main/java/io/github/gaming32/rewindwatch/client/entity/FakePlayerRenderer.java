@@ -34,6 +34,7 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, FakePla
         slimModel = new FakePlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
 
         addLayer(new FakeCapeLayer(this));
+        addLayer(new FakeElytraLayer(this, context.getModelSet()));
     }
 
     @Override
@@ -108,18 +109,19 @@ public class FakePlayerRenderer extends LivingEntityRenderer<FakePlayer, FakePla
     // From PlayerRenderer
     @Override
     protected void setupRotations(FakePlayer entity, @NotNull PoseStack poseStack, float bob, float yBodyRot, float partialTick, float scale) {
-        float f = entity.getSwimAmount(partialTick);
+        final var poseData = entity.getPoseData();
+        float f = poseData.swimAmount();
         float f1 = entity.getViewXRot(partialTick);
         if (entity.isFallFlying()) {
             super.setupRotations(entity, poseStack, bob, yBodyRot, partialTick, scale);
-            float f2 = (float)entity.getFallFlyingTicks() + partialTick;
+            float f2 = (float)poseData.fallFlyTicks();
             float f3 = Mth.clamp(f2 * f2 / 100.0F, 0.0F, 1.0F);
             if (!entity.isAutoSpinAttack()) {
                 poseStack.mulPose(Axis.XP.rotationDegrees(f3 * (-90.0F - f1)));
             }
 
-            Vec3 vec3 = entity.getViewVector(partialTick);
-            Vec3 vec31 = entity.getPlayerSpeed();
+            Vec3 vec3 = entity.getLookAngle();
+            Vec3 vec31 = entity.getDeltaMovement();
             double d0 = vec31.horizontalDistanceSqr();
             double d1 = vec3.horizontalDistanceSqr();
             if (d0 > 0.0 && d1 > 0.0) {
