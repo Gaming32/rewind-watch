@@ -2,8 +2,8 @@ package io.github.gaming32.rewindwatch.registry;
 
 import io.github.gaming32.rewindwatch.RewindWatch;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
+import io.github.gaming32.rewindwatch.state.LivingAnimationState;
 import io.github.gaming32.rewindwatch.state.LockedPlayerState;
-import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
 import io.github.gaming32.rewindwatch.state.StoredPositionRecovery;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.neoforged.bus.api.IEventBus;
@@ -23,8 +23,8 @@ public class RewindWatchAttachmentTypes {
                 .serialize(EntityEffect.CODEC)
                 .build()
     );
-    public static final Supplier<AttachmentType<PlayerAnimationState>> PLAYER_ANIMATION_STATE = REGISTER.register(
-        "player_animation_state", () -> AttachmentType.builder(() -> PlayerAnimationState.NONE).build()
+    public static final Supplier<AttachmentType<LivingAnimationState>> PLAYER_ANIMATION_STATE = REGISTER.register(
+        "player_animation_state", () -> AttachmentType.builder(() -> LivingAnimationState.NONE).build()
     );
     public static final Supplier<AttachmentType<LockedPlayerState>> LOCKED_PLAYER_STATE = REGISTER.register(
         "locked_player_state", () ->

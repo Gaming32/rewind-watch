@@ -29,12 +29,16 @@ public class RWClientNetworking {
         if (entity != null) {
             entity.setData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE, payload.state());
         }
+        payload.state().apply(entity);
     }
 
     public static void handleClearLockedState(ClientboundClearLockedStatePayload payload, IPayloadContext context) {
         final var entity = payload.getEntity(context);
         if (entity != null) {
-            entity.removeData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE);
+            final var removed = entity.removeData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE);
+            if (removed != null) {
+                removed.apply(entity);
+            }
         }
     }
 }

@@ -84,7 +84,7 @@ public class MixinLivingEntityRenderer {
             player.xCloak = player.xCloakO = cloak.x;
             player.yCloak = player.yCloakO = cloak.y;
             player.zCloak = player.zCloakO = cloak.z;
-            original.call(entity, facing.y(), partialTicks, poseStack, buffer, packedLight);
+            original.call(entity, facing.y(), 1f, poseStack, buffer, packedLight);
         } finally {
             entity.setYRot(yRot);
             entity.setXRot(xRot);

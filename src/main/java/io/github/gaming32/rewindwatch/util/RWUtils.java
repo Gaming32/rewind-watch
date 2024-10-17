@@ -42,10 +42,6 @@ public class RWUtils {
     }
 
     public static Set<PlayerModelPart> unpackModelCustomization(byte customization) {
-        return unpackModelCustomization(customization & 0xff);
-    }
-
-    public static Set<PlayerModelPart> unpackModelCustomization(int customization) {
         final var result = EnumSet.noneOf(PlayerModelPart.class);
         for (final var part : PlayerModelPart.values()) {
             if ((customization & part.getMask()) != 0) {
@@ -55,10 +51,10 @@ public class RWUtils {
         return result;
     }
 
-    public static int packModelCustomization(Set<PlayerModelPart> parts) {
-        var result = 0;
+    public static byte packModelCustomization(Set<PlayerModelPart> parts) {
+        var result = (byte)0;
         for (final var part : parts) {
-            result |= part.getMask();
+            result |= (byte)part.getMask();
         }
         return result;
     }

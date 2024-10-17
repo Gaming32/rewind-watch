@@ -22,7 +22,12 @@ public record PoseData(int fallFlyTicks, float swimAmount) {
         PoseData::new
     );
 
-    public static PoseData fromEntity(LivingEntity entity) {
+    public static PoseData from(LivingEntity entity) {
         return new PoseData(entity.fallFlyTicks, entity.swimAmount);
+    }
+
+    public void apply(LivingEntity entity) {
+        entity.fallFlyTicks = fallFlyTicks;
+        entity.swimAmount = entity.swimAmountO = swimAmount;
     }
 }

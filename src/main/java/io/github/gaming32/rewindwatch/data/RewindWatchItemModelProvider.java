@@ -13,6 +13,6 @@ public class RewindWatchItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        handheldItem(RewindWatchItems.REWIND_WATCH.get());
+        basicItem(RewindWatchItems.REWIND_WATCH.get());
     }
 }

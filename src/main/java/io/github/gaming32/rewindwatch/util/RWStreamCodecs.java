@@ -9,12 +9,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Set;
 
 public class RWStreamCodecs {
-    public static final StreamCodec<ByteBuf, Integer> UNSIGNED_BYTE = StreamCodec.of(
-        ByteBuf::writeByte, buf -> (int)buf.readUnsignedByte()
-    );
-
     public static final StreamCodec<ByteBuf, Set<PlayerModelPart>> PLAYER_MODEL_PART_SET =
-        UNSIGNED_BYTE.map(RWUtils::unpackModelCustomization, RWUtils::packModelCustomization);
+        ByteBufCodecs.BYTE.map(RWUtils::unpackModelCustomization, RWUtils::packModelCustomization);
 
     public static final StreamCodec<ByteBuf, Vec3> VEC3 = StreamCodec.composite(
         ByteBufCodecs.DOUBLE, Vec3::x,

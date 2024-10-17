@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 public record LivingFacingAngles(float x, float y, float bodyY, float headY) {
@@ -32,5 +33,14 @@ public record LivingFacingAngles(float x, float y, float bodyY, float headY) {
             entity.yBodyRot,
             entity.getYHeadRot()
         );
+    }
+
+    public void apply(Entity entity) {
+        entity.setXRot(entity.xRotO = x);
+        entity.setYRot(entity.yRotO = y);
+        if (entity instanceof LivingEntity living) {
+            living.yBodyRot = living.yBodyRotO = bodyY;
+            living.yHeadRot = living.yHeadRotO = headY;
+        }
     }
 }

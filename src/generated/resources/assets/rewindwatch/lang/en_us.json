@@ -1,3 +1,6 @@
 {
-  "item.rewindwatch.rewind_watch": "Rewind Watch"
+  "item.rewindwatch.rewind_watch": "Rewind Watch",
+  "item.rewindwatch.rewind_watch.recalled": "Player Recalled",
+  "item.rewindwatch.rewind_watch.used": "Rewind Watch Used",
+  "rewindwatch.dimension_gone": "The dimension you are recalling to no longer exists"
 }

@@ -10,6 +10,7 @@ import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedState
 import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
+import io.github.gaming32.rewindwatch.registry.RewindWatchSoundEvents;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -29,6 +30,7 @@ public class RewindWatch {
     public RewindWatch(IEventBus bus) {
         RewindWatchAttachmentTypes.register(bus);
         RewindWatchEntityDataSerializers.register(bus);
+        RewindWatchSoundEvents.register(bus);
         RewindWatchItems.register(bus);
         RewindWatchEntityTypes.register(bus);
 

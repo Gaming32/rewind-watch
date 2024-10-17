@@ -9,7 +9,7 @@ import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
-import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
+import io.github.gaming32.rewindwatch.state.LivingAnimationState;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -65,7 +65,7 @@ public class RewindWatchClient {
         final var player = Minecraft.getInstance().player;
         if (player == null) return;
         final var animation = player.walkAnimation;
-        player.connection.send(new ServerboundAnimationStatePayload(new PlayerAnimationState(
+        player.connection.send(new ServerboundAnimationStatePayload(new LivingAnimationState(
             animation.position(), animation.speed()
         )));
     }

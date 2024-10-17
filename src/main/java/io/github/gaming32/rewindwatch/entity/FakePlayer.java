@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
-import io.github.gaming32.rewindwatch.state.PlayerAnimationState;
+import io.github.gaming32.rewindwatch.state.LivingAnimationState;
 import io.github.gaming32.rewindwatch.state.PoseData;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.Util;
@@ -41,8 +41,8 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
 
     private static final EntityDataAccessor<Optional<UUID>> DATA_PLAYER_UUID =
         SynchedEntityData.defineId(FakePlayer.class, EntityDataSerializers.OPTIONAL_UUID);
-    private static final EntityDataAccessor<PlayerAnimationState> DATA_ANIMATION_STATE =
-        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.PLAYER_ANIMATION_STATE.get());
+    private static final EntityDataAccessor<LivingAnimationState> DATA_ANIMATION_STATE =
+        SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.ANIMATION_STATE.get());
     private static final EntityDataAccessor<EntityEffect> DATA_CURRENT_EFFECT =
         SynchedEntityData.defineId(FakePlayer.class, RewindWatchEntityDataSerializers.ENTITY_EFFECT.get());
     private static final EntityDataAccessor<Byte> DATA_MODEL_CUSTOMIZATION =
@@ -66,6 +66,7 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
         setYBodyRot(entity.yBodyRot);
         setYHeadRot(entity.getYHeadRot());
         setSharedFlag(FLAG_FALL_FLYING, entity.isFallFlying());
+        setOnGround(entity.onGround());
 
         setPlayerUuid(Optional.of(entity.getUUID()));
         setDeltaMovement(entity.getDeltaMovement());
@@ -74,15 +75,25 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
             setModelCustomization(player.getEntityData().get(Player.DATA_PLAYER_MODE_CUSTOMISATION));
             setCloak(new Vec3(player.xCloak, player.yCloak, player.zCloak));
         }
-        setPoseData(PoseData.fromEntity(entity));
+        setPoseData(PoseData.from(entity));
         setHasElytra(entity.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA));
+    }
+
+    public void reapplySomeData(Player player) {
+        player.setPose(getPose());
+        if (isFallFlying()) {
+            player.startFallFlying();
+        } else {
+            player.stopFallFlying();
+        }
+        player.setOnGround(onGround());
     }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_PLAYER_UUID, Optional.empty());
-        builder.define(DATA_ANIMATION_STATE, PlayerAnimationState.NONE);
+        builder.define(DATA_ANIMATION_STATE, LivingAnimationState.NONE);
         builder.define(DATA_CURRENT_EFFECT, EntityEffect.Simple.GRAYSCALE);
         builder.define(DATA_MODEL_CUSTOMIZATION, DEFAULT_PLAYER_MODEL_CUSTOMIZATION);
         builder.define(DATA_CLOAK, Vec3.ZERO);
@@ -102,8 +113,8 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
         } else {
             setPlayerUuid(Optional.empty());
         }
-        PlayerAnimationState.CODEC.parse(NbtOps.INSTANCE, compound.get("animation"))
-            .resultOrPartial(Util.prefix("Failed to parse PlayerAnimationState: ", LOGGER::error))
+        LivingAnimationState.CODEC.parse(NbtOps.INSTANCE, compound.get("animation"))
+            .resultOrPartial(Util.prefix("Failed to parse LivingAnimationState: ", LOGGER::error))
             .ifPresent(this::setAnimationState);
         EntityEffect.CODEC.parse(NbtOps.INSTANCE, compound.get("current_effect"))
             .resultOrPartial(Util.prefix("Failed to parse EntityEffect: ", LOGGER::error))
@@ -124,7 +135,7 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
         compound.putFloat("head_rot", yHeadRot);
 
         getPlayerUuid().ifPresent(uuid -> compound.putUUID("player_uuid", uuid));
-        compound.put("animation", PlayerAnimationState.CODEC.encodeStart(NbtOps.INSTANCE, getAnimationState()).getOrThrow());
+        compound.put("animation", LivingAnimationState.CODEC.encodeStart(NbtOps.INSTANCE, getAnimationState()).getOrThrow());
         compound.put("current_effect", EntityEffect.CODEC.encodeStart(NbtOps.INSTANCE, getCurrentEffect()).getOrThrow());
         compound.putByte("model_customization", getModelCustomization());
         RWUtils.putVec3(compound, "cloak", getCloak());
@@ -219,11 +230,11 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
         entityData.set(DATA_PLAYER_UUID, playerUuid);
     }
 
-    public PlayerAnimationState getAnimationState() {
+    public LivingAnimationState getAnimationState() {
         return entityData.get(DATA_ANIMATION_STATE);
     }
 
-    public void setAnimationState(PlayerAnimationState animationSpeed) {
+    public void setAnimationState(LivingAnimationState animationSpeed) {
         entityData.set(DATA_ANIMATION_STATE, animationSpeed);
     }
 
