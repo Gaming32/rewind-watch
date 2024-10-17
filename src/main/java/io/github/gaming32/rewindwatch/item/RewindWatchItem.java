@@ -1,11 +1,13 @@
 package io.github.gaming32.rewindwatch.item;
 
 import com.mojang.logging.LogUtils;
+import io.github.gaming32.rewindwatch.RewindWatchTicketTypes;
 import io.github.gaming32.rewindwatch.components.RecallData;
 import io.github.gaming32.rewindwatch.components.RewindWatchDataComponents;
 import io.github.gaming32.rewindwatch.components.ScalableCoordinate;
 import io.github.gaming32.rewindwatch.entity.FakePlayer;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
+import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchSoundEvents;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.GlobalLocation;
@@ -16,7 +18,11 @@ import io.github.gaming32.rewindwatch.timer.RecallSoundCallback;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -24,6 +30,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -88,9 +95,27 @@ public class RewindWatchItem extends Item {
             GlobalLocation.fromEntity(player), markerPlayer.getUUID()
         ));
         level.addFreshEntity(markerPlayer);
+        markOwned(player, level, markerPlayer.blockPosition());
 
         player.playNotifySound(RewindWatchSoundEvents.ITEM_REWIND_WATCH_SAVE.get(), SoundSource.PLAYERS, 1f, 1f);
         player.getCooldowns().addCooldown(this, SAVE_TIME);
+    }
+
+    private static void markOwned(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        final var alreadyOwned = player.getData(RewindWatchAttachmentTypes.OWNED_CHUNKS);
+        final var newOwned = RWUtils.copyAndAdd(alreadyOwned, getGlobalPos(level, pos));
+        player.setData(RewindWatchAttachmentTypes.OWNED_CHUNKS, newOwned);
+
+        final var chunk = new ChunkPos(pos);
+        level.getChunkSource().addRegionTicket(RewindWatchTicketTypes.FAKE_PLAYER, chunk, 0, chunk);
+    }
+
+    private static GlobalPos getGlobalPos(Level level, BlockPos pos) {
+        return new GlobalPos(level.dimension(), new BlockPos(roundDownCoord(pos.getX()), 0, roundDownCoord(pos.getZ())));
+    }
+
+    private static int roundDownCoord(int coord) {
+        return SectionPos.sectionToBlockCoord(SectionPos.blockToSectionCoord(coord));
     }
 
     private void recallPlayer(ServerPlayer player, RecallData recall) {
@@ -136,6 +161,7 @@ public class RewindWatchItem extends Item {
             RWAttachments.setEntityEffect(player, new EntityEffect.Dissolve(
                 time, endTime, EntityEffect.Dissolve.Type.TRANSPARENT, true
             ));
+            unmarkOwned(player, newLevel, player.blockPosition());
         } else {
             RWAttachments.lockMovement(player, new LockedPlayerState(
                 LivingFacingAngles.from(fakePlayer),
@@ -151,6 +177,7 @@ public class RewindWatchItem extends Item {
             RWAttachments.setEntityEffect(player, new EntityEffect.Dissolve(
                 time, endTime, EntityEffect.Dissolve.Type.GRAYSCALE, true
             ));
+            unmarkOwned(player, newLevel, fakePlayer.blockPosition());
         }
 
         final var queue = player.server.getWorldData().overworldData().getScheduledEvents();
@@ -175,5 +202,11 @@ public class RewindWatchItem extends Item {
         final var distance = sourcePos.scale(sourceScale / destScale).distanceTo(destPos);
         final var time = Math.round(distance / 50 * TICKS_PER_SECOND + TICKS_PER_SECOND / 2.0);
         return Math.clamp(time, TICKS_PER_SECOND / 2, MAX_TELEPORT_TIME);
+    }
+
+    private static void unmarkOwned(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        final var currentlyOwned = player.getData(RewindWatchAttachmentTypes.OWNED_CHUNKS);
+        final var newOwned = RWUtils.copyAndRemove(currentlyOwned, getGlobalPos(level, pos));
+        player.setData(RewindWatchAttachmentTypes.OWNED_CHUNKS, newOwned);
     }
 }

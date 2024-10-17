@@ -1,5 +1,6 @@
 package io.github.gaming32.rewindwatch.util;
 
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
@@ -12,10 +13,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.attachment.IAttachmentCopyHandler;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -78,5 +81,17 @@ public class RWUtils {
             return '-' + minutesToHoursMinutes(-minutes);
         }
         return "%02d:%02d".formatted(minutes / 60, minutes % 60);
+    }
+
+    public static <T> Set<T> copyAndAdd(Set<T> set, T value) {
+        return ImmutableSet.<T>builderWithExpectedSize(set.size() + 1).addAll(set).add(value).build();
+    }
+
+    public static <T> Set<T> copyAndRemove(Set<T> set, T value) {
+        return set.stream().filter(x -> !Objects.equals(x, value)).collect(ImmutableSet.toImmutableSet());
+    }
+
+    public static <T> IAttachmentCopyHandler<T> valueCopy() {
+        return (attachment, holder, provider) -> attachment;
     }
 }

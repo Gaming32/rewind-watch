@@ -9,19 +9,24 @@ import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 @EventBusSubscriber(modid = RewindWatch.MOD_ID)
 public class RewindWatchEventHandler {
@@ -33,6 +38,7 @@ public class RewindWatchEventHandler {
     @SubscribeEvent
     public static void loggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         syncAttachments(event.getEntity(), event.getEntity());
+        refreshOwnedChunks((ServerPlayer)event.getEntity());
     }
 
     private static void syncAttachments(Entity newEntity, Player player) {
@@ -97,6 +103,41 @@ public class RewindWatchEventHandler {
                 RWTranslationKeys.REWIND_WATCH_VISIBLE,
                 RWUtils.minutesToHoursMinutes((long)scaledDuration)
             ).withStyle(ChatFormatting.DARK_GREEN));
+        }
+    }
+
+    @SubscribeEvent
+    public static void playerTick(PlayerTickEvent.Pre event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        if (player.tickCount == 0) return;
+        final var refreshInterval = RewindWatchTicketTypes.FAKE_PLAYER.timeout();
+        if (player.tickCount % refreshInterval != refreshInterval - 1) return;
+        refreshOwnedChunks(player);
+    }
+
+    @SubscribeEvent
+    public static void playerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        refreshOwnedChunks(player);
+    }
+
+    private static void refreshOwnedChunks(ServerPlayer player) {
+        final var originalSet = player.getExistingData(RewindWatchAttachmentTypes.OWNED_CHUNKS).orElse(Set.of());
+        Set<GlobalPos> newSet = null;
+        for (final var pos : originalSet) {
+            final var level = player.server.getLevel(pos.dimension());
+            if (level == null) {
+                if (newSet == null) {
+                    newSet = new HashSet<>(originalSet);
+                }
+                newSet.remove(pos);
+                continue;
+            }
+            final var chunk = new ChunkPos(pos.pos());
+            level.getChunkSource().addRegionTicket(RewindWatchTicketTypes.FAKE_PLAYER, chunk, 0, chunk);
+        }
+        if (newSet != null) {
+            player.setData(RewindWatchAttachmentTypes.OWNED_CHUNKS, newSet);
         }
     }
 }
