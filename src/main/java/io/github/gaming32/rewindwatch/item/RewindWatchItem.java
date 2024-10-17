@@ -16,6 +16,7 @@ import io.github.gaming32.rewindwatch.util.RWAttachments;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -24,8 +25,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+
+import static net.minecraft.SharedConstants.TICKS_PER_MINUTE;
+import static net.minecraft.SharedConstants.TICKS_PER_SECOND;
 
 public class RewindWatchItem extends Item {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -80,8 +86,17 @@ public class RewindWatchItem extends Item {
 
     private void recallPlayer(ServerPlayer player, StoredPositionRecovery recovery) {
         final var originalLevel = player.serverLevel();
+        final var newLevel = originalLevel.getServer().getLevel(recovery.location().dimension());
+        if (newLevel == null) {
+            LOGGER.warn("Target dimension {} no longer exists", recovery.location().dimension());
+            player.sendSystemMessage(
+                Component.translatable("rewindwatch.dimension_gone").withStyle(ChatFormatting.RED), true
+            );
+            return;
+        }
+
         final var time = originalLevel.getGameTime();
-        final var duration = computeDuration();
+        final var duration = computeDuration(originalLevel, player.position(), newLevel, recovery.location().position());
         final var endTime = time + duration;
 
         final var standInPlayer = RewindWatchEntityTypes.FAKE_PLAYER.get().create(originalLevel);
@@ -96,13 +111,8 @@ public class RewindWatchItem extends Item {
         }
 
         if (!recovery.location().teleport(player)) {
-            LOGGER.warn("Target dimension {} no longer exists", recovery.location().dimension());
-            player.sendSystemMessage(
-                Component.translatable("rewindwatch.dimension_gone").withStyle(ChatFormatting.RED), true
-            );
-            return;
+            throw new IllegalStateException("Teleportation failed");
         }
-        final var newLevel = player.serverLevel();
 
         final var markerPlayer = newLevel.getEntity(recovery.fakePlayer());
         if (!(markerPlayer instanceof FakePlayer fakePlayer)) {
@@ -121,7 +131,8 @@ public class RewindWatchItem extends Item {
                 RWUtils.unpackModelCustomization(fakePlayer.getModelCustomization()),
                 fakePlayer.getCloak(),
                 fakePlayer.getPoseData(),
-                fakePlayer.getDeltaMovement()
+                fakePlayer.getDeltaMovement(),
+                fakePlayer.onGround()
             ));
             fakePlayer.reapplySomeData(player);
             markerPlayer.discard();
@@ -145,7 +156,10 @@ public class RewindWatchItem extends Item {
         player.getCooldowns().addCooldown(this, duration + POST_RECALL_COOLDOWN);
     }
 
-    private static int computeDuration() {
-        return 60;
+    private static int computeDuration(ServerLevel sourceLevel, Vec3 sourcePos, ServerLevel destLevel, Vec3 destPos) {
+        final var distance = sourcePos.distanceTo(destPos) *
+                             DimensionType.getTeleportationScale(sourceLevel.dimensionType(), destLevel.dimensionType());
+        final var time = Math.round(distance / 50 * TICKS_PER_SECOND + TICKS_PER_SECOND / 2.0);
+        return Math.clamp(time, TICKS_PER_SECOND / 2, TICKS_PER_MINUTE / 2);
     }
 }

@@ -6,7 +6,7 @@ import io.github.gaming32.rewindwatch.client.entity.FakePlayerRenderer;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderState;
 import io.github.gaming32.rewindwatch.client.shaders.RewindWatchRenderTypes;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
-import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.network.serverbound.ServerboundClientStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.LivingAnimationState;
@@ -65,9 +65,10 @@ public class RewindWatchClient {
         final var player = Minecraft.getInstance().player;
         if (player == null) return;
         final var animation = player.walkAnimation;
-        player.connection.send(new ServerboundAnimationStatePayload(new LivingAnimationState(
-            animation.position(), animation.speed()
-        )));
+        player.connection.send(new ServerboundClientStatePayload(
+            new LivingAnimationState(animation.position(), animation.speed()),
+            player.getDeltaMovement()
+        ));
     }
 
     private void interactionTriggered(InputEvent.InteractionKeyMappingTriggered event) {

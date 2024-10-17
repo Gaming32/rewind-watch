@@ -6,6 +6,7 @@ import io.github.gaming32.rewindwatch.state.LivingAnimationState;
 import io.github.gaming32.rewindwatch.state.LockedPlayerState;
 import io.github.gaming32.rewindwatch.state.StoredPositionRecovery;
 import io.github.gaming32.rewindwatch.util.RWUtils;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -39,6 +40,9 @@ public class RewindWatchAttachmentTypes {
                 .copyOnDeath()
                 .copyHandler((attachment, holder, provider) -> attachment) // Immutable data doesn't need to actually be copied
                 .build()
+    );
+    public static final Supplier<AttachmentType<Vec3>> CLIENT_VELOCITY = REGISTER.register(
+        "client_velocity", () -> AttachmentType.builder(() -> Vec3.ZERO).build()
     );
 
     public static void register(IEventBus bus) {

@@ -10,6 +10,7 @@ import io.github.gaming32.rewindwatch.state.LockedPlayerState;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Objects;
@@ -53,8 +54,13 @@ public class RWAttachments {
         player.setData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE, state);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new ClientboundLockedStatePayload(player.getId(), state));
     }
+
     public static void unlockMovement(ServerPlayer player) {
         player.removeData(RewindWatchAttachmentTypes.LOCKED_PLAYER_STATE);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new ClientboundClearLockedStatePayload(player.getId()));
+    }
+
+    public static Vec3 getVelocity(Entity entity) {
+        return entity.getExistingData(RewindWatchAttachmentTypes.CLIENT_VELOCITY).orElseGet(entity::getDeltaMovement);
     }
 }

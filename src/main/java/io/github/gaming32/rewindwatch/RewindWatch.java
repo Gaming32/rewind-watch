@@ -7,7 +7,7 @@ import io.github.gaming32.rewindwatch.item.RewindWatchItems;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
-import io.github.gaming32.rewindwatch.network.serverbound.ServerboundAnimationStatePayload;
+import io.github.gaming32.rewindwatch.network.serverbound.ServerboundClientStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import io.github.gaming32.rewindwatch.registry.RewindWatchSoundEvents;
@@ -63,8 +63,8 @@ public class RewindWatch {
                 RWClientNetworking::handleClearLockedState
             )
             .playToServer(
-                ServerboundAnimationStatePayload.TYPE,
-                ServerboundAnimationStatePayload.STREAM_CODEC,
+                ServerboundClientStatePayload.TYPE,
+                ServerboundClientStatePayload.STREAM_CODEC,
                 RWServerNetworking::handleAnimationState
             );
     }

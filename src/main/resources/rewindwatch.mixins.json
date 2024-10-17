@@ -4,6 +4,7 @@
   "package": "io.github.gaming32.rewindwatch.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "MixinPlayer",
     "MixinServerGamePacketListenerImpl"
   ],
   "client": [

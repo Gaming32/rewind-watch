@@ -6,6 +6,7 @@ import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.LivingAnimationState;
 import io.github.gaming32.rewindwatch.state.PoseData;
+import io.github.gaming32.rewindwatch.util.RWAttachments;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -69,7 +70,7 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
         setOnGround(entity.onGround());
 
         setPlayerUuid(Optional.of(entity.getUUID()));
-        setDeltaMovement(entity.getDeltaMovement());
+        setDeltaMovement(RWAttachments.getVelocity(entity));
         entity.getExistingData(RewindWatchAttachmentTypes.PLAYER_ANIMATION_STATE).ifPresent(this::setAnimationState);
         if (entity instanceof Player player) {
             setModelCustomization(player.getEntityData().get(Player.DATA_PLAYER_MODE_CUSTOMISATION));
