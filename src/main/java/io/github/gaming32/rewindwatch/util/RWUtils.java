@@ -68,4 +68,15 @@ public class RWUtils {
             default -> null;
         });
     }
+
+    public static String ticksToHoursMinutes(long ticks) {
+        return minutesToHoursMinutes(ticks * 3 / 50);
+    }
+
+    public static String minutesToHoursMinutes(long minutes) {
+        if (minutes < 0) {
+            return '-' + minutesToHoursMinutes(-minutes);
+        }
+        return "%02d:%02d".formatted(minutes / 60, minutes % 60);
+    }
 }

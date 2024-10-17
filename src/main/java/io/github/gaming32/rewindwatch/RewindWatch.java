@@ -2,6 +2,7 @@ package io.github.gaming32.rewindwatch;
 
 import com.mojang.logging.LogUtils;
 import io.github.gaming32.rewindwatch.client.RWClientNetworking;
+import io.github.gaming32.rewindwatch.components.RewindWatchDataComponents;
 import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.item.RewindWatchItems;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
@@ -29,6 +30,7 @@ public class RewindWatch {
 
     public RewindWatch(IEventBus bus) {
         RewindWatchAttachmentTypes.register(bus);
+        RewindWatchDataComponents.register(bus);
         RewindWatchEntityDataSerializers.register(bus);
         RewindWatchSoundEvents.register(bus);
         RewindWatchItems.register(bus);

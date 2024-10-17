@@ -4,8 +4,6 @@ import io.github.gaming32.rewindwatch.RewindWatch;
 import io.github.gaming32.rewindwatch.state.EntityEffect;
 import io.github.gaming32.rewindwatch.state.LivingAnimationState;
 import io.github.gaming32.rewindwatch.state.LockedPlayerState;
-import io.github.gaming32.rewindwatch.state.StoredPositionRecovery;
-import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -31,14 +29,6 @@ public class RewindWatchAttachmentTypes {
         "locked_player_state", () ->
             AttachmentType.builder(() -> LockedPlayerState.NONE)
                 .serialize(LockedPlayerState.CODEC)
-                .build()
-    );
-    public static final Supplier<AttachmentType<StoredPositionRecovery>> STORED_POSITION_RECOVERY = REGISTER.register(
-        "stored_position_recovery", () ->
-            AttachmentType.builder(holder -> StoredPositionRecovery.defaultForLevel(RWUtils.getLevel(holder).orElse(null)))
-                .serialize(StoredPositionRecovery.CODEC)
-                .copyOnDeath()
-                .copyHandler((attachment, holder, provider) -> attachment) // Immutable data doesn't need to actually be copied
                 .build()
     );
     public static final Supplier<AttachmentType<Vec3>> CLIENT_VELOCITY = REGISTER.register(

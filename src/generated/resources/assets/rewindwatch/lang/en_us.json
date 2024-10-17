@@ -1,6 +1,8 @@
 {
   "item.rewindwatch.rewind_watch": "Rewind Watch",
+  "item.rewindwatch.rewind_watch.hidden": "The watch is impossible to make out",
   "item.rewindwatch.rewind_watch.recalled": "Player Recalled",
   "item.rewindwatch.rewind_watch.used": "Rewind Watch Used",
+  "item.rewindwatch.rewind_watch.visible": "The watch reads %s",
   "rewindwatch.dimension_gone": "The dimension you are recalling to no longer exists"
 }
