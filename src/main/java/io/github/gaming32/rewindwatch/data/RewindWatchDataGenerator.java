@@ -15,5 +15,6 @@ public class RewindWatchDataGenerator {
 
         generator.addProvider(event.includeClient(), new RewindWatchItemModelProvider(output, existingFileHelper));
         generator.addProvider(event.includeClient(), new RewindWatchLanguageProvider(output));
+        generator.addProvider(event.includeClient(), new RewindWatchSoundDefinitionsProvider(output, existingFileHelper));
     }
 }

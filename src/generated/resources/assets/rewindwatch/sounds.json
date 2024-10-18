@@ -1,0 +1,14 @@
+{
+  "item.rewind_watch.recalled": {
+    "sounds": [
+      "rewindwatch:item/rewind_watch/recalled"
+    ],
+    "subtitle": "item.rewindwatch.rewind_watch.recalled"
+  },
+  "item.rewind_watch.save": {
+    "sounds": [
+      "block/amethyst/step1"
+    ],
+    "subtitle": "item.rewindwatch.rewind_watch.used"
+  }
+}
