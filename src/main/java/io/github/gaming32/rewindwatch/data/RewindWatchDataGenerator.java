@@ -11,7 +11,11 @@ public class RewindWatchDataGenerator {
     public static void gatherData(GatherDataEvent event) {
         final var generator = event.getGenerator();
         final var output = generator.getPackOutput();
+        final var registries = event.getLookupProvider();
         final var existingFileHelper = event.getExistingFileHelper();
+
+        generator.addProvider(event.includeServer(), new RewindWatchEntityTypeTagsProvider(output, registries, existingFileHelper));
+        generator.addProvider(event.includeServer(), new RewindWatchRecipeProvider(output, registries));
 
         generator.addProvider(event.includeClient(), new RewindWatchItemModelProvider(output, existingFileHelper));
         generator.addProvider(event.includeClient(), new RewindWatchLanguageProvider(output));
