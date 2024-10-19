@@ -1,4 +1,8 @@
 {
+  "advancements.rewindwatch.recall.description": "Recall yourself to a previous location using a Rewind Watch",
+  "advancements.rewindwatch.recall.title": "That Felt Strange",
+  "advancements.rewindwatch.recall_far_away.description": "Use a Rewind Watch to recall yourself from 11:59",
+  "advancements.rewindwatch.recall_far_away.title": "I Can't Move!",
   "item.rewindwatch.rewind_watch": "Rewind Watch",
   "item.rewindwatch.rewind_watch.hidden": "The watch is impossible to make out",
   "item.rewindwatch.rewind_watch.recalled": "Player Recalled",

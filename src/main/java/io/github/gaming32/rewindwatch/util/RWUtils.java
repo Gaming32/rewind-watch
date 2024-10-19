@@ -1,11 +1,13 @@
 package io.github.gaming32.rewindwatch.util;
 
 import com.google.common.collect.ImmutableSet;
+import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -93,5 +95,9 @@ public class RWUtils {
 
     public static <T> IAttachmentCopyHandler<T> valueCopy() {
         return (attachment, holder, provider) -> attachment;
+    }
+
+    public static boolean matches(LocationPredicate predicate, ServerLevel level, Vec3 pos) {
+        return predicate.matches(level, pos.x, pos.y, pos.z);
     }
 }

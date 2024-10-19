@@ -1,0 +1,25 @@
+{
+  "parent": "minecraft:nether/summon_wither",
+  "criteria": {
+    "recalled": {
+      "trigger": "rewindwatch:watch_recall"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.rewindwatch.recall.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "rewindwatch:rewind_watch"
+    },
+    "title": {
+      "translate": "advancements.rewindwatch.recall.title"
+    }
+  },
+  "requirements": [
+    [
+      "recalled"
+    ]
+  ]
+}

@@ -18,6 +18,12 @@ public class RewindWatchLanguageProvider extends LanguageProvider {
         add(RWTranslationKeys.REWIND_WATCH_RECALLED, "Player Recalled");
         add(RWTranslationKeys.REWIND_WATCH_VISIBLE, "The watch reads %s");
         add(RWTranslationKeys.REWIND_WATCH_HIDDEN, "The watch is impossible to make out");
+
         add("rewindwatch.dimension_gone", "The dimension you are recalling to no longer exists");
+
+        add(RewindWatchAdvancementProvider.RECALL_TITLE, "That Felt Strange");
+        add(RewindWatchAdvancementProvider.RECALL_DESC, "Recall yourself to a previous location using a Rewind Watch");
+        add(RewindWatchAdvancementProvider.RECALL_FAR_AWAY_TITLE, "I Can't Move!");
+        add(RewindWatchAdvancementProvider.RECALL_FAR_AWAY_DESC, "Use a Rewind Watch to recall yourself from 11:59");
     }
 }

@@ -1,0 +1,34 @@
+{
+  "parent": "rewindwatch:recall",
+  "criteria": {
+    "recalled": {
+      "conditions": {
+        "recall_duration": {
+          "min": 600
+        }
+      },
+      "trigger": "rewindwatch:watch_recall"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.rewindwatch.recall_far_away.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "rewindwatch:rewind_watch"
+    },
+    "title": {
+      "translate": "advancements.rewindwatch.recall_far_away.title"
+    }
+  },
+  "requirements": [
+    [
+      "recalled"
+    ]
+  ],
+  "rewards": {
+    "experience": 120
+  }
+}

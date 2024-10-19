@@ -15,6 +15,7 @@ import io.github.gaming32.rewindwatch.state.LivingFacingAngles;
 import io.github.gaming32.rewindwatch.state.LockedPlayerState;
 import io.github.gaming32.rewindwatch.timer.RecallCompleteCallback;
 import io.github.gaming32.rewindwatch.timer.RecallSoundCallback;
+import io.github.gaming32.rewindwatch.trigger.RewindWatchCriteriaTriggers;
 import io.github.gaming32.rewindwatch.util.RWAttachments;
 import io.github.gaming32.rewindwatch.util.RWUtils;
 import net.minecraft.ChatFormatting;
@@ -67,7 +68,7 @@ public class RewindWatchItem extends Item {
             if (recall == null) {
                 savePlayer(serverPlayer, item);
             } else {
-                recallPlayer(serverPlayer, recall);
+                recallPlayer(serverPlayer, item, recall);
                 item.remove(RewindWatchDataComponents.SCALABLE_COORDINATE);
             }
         }
@@ -118,7 +119,7 @@ public class RewindWatchItem extends Item {
         return SectionPos.sectionToBlockCoord(SectionPos.blockToSectionCoord(coord));
     }
 
-    private void recallPlayer(ServerPlayer player, RecallData recall) {
+    private void recallPlayer(ServerPlayer player, ItemStack item, RecallData recall) {
         final var originalLevel = player.serverLevel();
         final var newLevel = originalLevel.getServer().getLevel(recall.recallLocation().dimension());
         if (newLevel == null) {
@@ -147,6 +148,7 @@ public class RewindWatchItem extends Item {
             originalLevel.addFreshEntity(standInPlayer);
         }
 
+        final var oldPos = player.position();
         if (!recall.recallLocation().teleport(player)) {
             throw new IllegalStateException("Teleportation failed");
         }
@@ -179,6 +181,13 @@ public class RewindWatchItem extends Item {
             ));
             unmarkOwned(player, newLevel, fakePlayer.blockPosition());
         }
+
+        RewindWatchCriteriaTriggers.WATCH_RECALL.get().trigger(
+            player, item,
+            originalLevel, oldPos,
+            newLevel, player.position(),
+            duration
+        );
 
         final var queue = player.server.getWorldData().overworldData().getScheduledEvents();
         queue.schedule(

@@ -97,8 +97,8 @@ public class RewindWatchEventHandler {
                 player.level().dimensionType().coordinateScale(), player.position(),
                 coordinate.scale(), coordinate.pos()
             );
-            final var minutesInHalfDay = 60 * 12;
-            final var scaledDuration = (double)duration / (RewindWatchItem.MAX_TELEPORT_TIME + 1) * minutesInHalfDay;
+            final var maxWatchTime = 60 * 12 - 1;
+            final var scaledDuration = (double)duration / RewindWatchItem.MAX_TELEPORT_TIME * maxWatchTime;
             result.add(Component.translatable(
                 RWTranslationKeys.REWIND_WATCH_VISIBLE,
                 RWUtils.minutesToHoursMinutes((long)scaledDuration)
