@@ -13,33 +13,44 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.ApiStatus;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-@ApiStatus.OverrideOnly
 public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
-    Supplier<T> initialValue;
+    private Function<ResourceKey<R>, T> initialValue;
     private final ResourceKey<Registry<R>> registry;
     DeferredHolder<R, T> holder = null;
 
-    protected RegValueImpl(Supplier<T> initialValue, ResourceKey<Registry<R>> registry) {
+    public RegValueImpl(Function<ResourceKey<R>, T> initialValue, ResourceKey<Registry<R>> registry) {
         this.initialValue = initialValue;
         this.registry = registry;
     }
 
-    @SuppressWarnings("unchecked")
+    public RegValueImpl(Supplier<T> initialValue, ResourceKey<Registry<R>> registry) {
+        this(key -> initialValue.get(), registry);
+    }
+
+    public RegValueImpl(Function<ResourceKey<R>, T> initialValue, Object inferenceLambda) {
+        this(initialValue, findRegistry(inferenceLambda, false));
+    }
+
     public RegValueImpl(Supplier<T> initialValue, Object inferenceLambda) {
-        this(initialValue, (ResourceKey<Registry<R>>)findRegistry(inferenceLambda, false));
+        this(initialValue, findRegistry(inferenceLambda, false));
+    }
+
+    RegValueImpl(Function<ResourceKey<R>, T> initialValue) {
+        this(initialValue, findRegistry(initialValue, true));
+    }
+
+    RegValueImpl(Supplier<T> initialValue) {
+        this(initialValue, findRegistry(initialValue, true));
     }
 
     @SuppressWarnings("unchecked")
-    protected RegValueImpl(Supplier<T> initialValue) {
-        this(initialValue, (ResourceKey<Registry<R>>)findRegistry(initialValue, true));
-    }
-
-    private static ResourceKey<?> findRegistry(Object lambda, boolean validateSupplier) {
+    private static <R> ResourceKey<Registry<R>> findRegistry(Object lambda, boolean validateSupplier) {
         final var ownerClass = getLambdaClass(lambda);
         final var registryKey = getRegistry(ownerClass);
         if (!BuiltInRegistries.REGISTRY.containsKey(registryKey.location())) {
@@ -51,7 +62,7 @@ public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
                 validateSupplier((Supplier<?>)lambda, registryClass, ownerClass);
             }
         }
-        return registryKey;
+        return (ResourceKey<Registry<R>>)registryKey;
     }
 
     public static void validateRegisterFor(Object lambda, ResourceKey<?> realTarget) {
@@ -96,8 +107,12 @@ public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
         return ResourceKey.createRegistryKey(registryName);
     }
 
-    private static void validateSupplier(Supplier<?> supplier, Class<?> registryClass, Class<?> owner) {
-        final var lambdaType = TypeResolver.resolveRawArgument(Supplier.class, supplier.getClass());
+    private static void validateSupplier(Object supplier, Class<?> registryClass, Class<?> owner) {
+        final var isSupplier = supplier instanceof Supplier<?>;
+        final var argIndex = isSupplier ? 0 : 1;
+        final var baseType = isSupplier ? Supplier.class : Function.class;
+        final var lambdaType = ArrayUtils.get(TypeResolver.resolveRawArguments(baseType, supplier.getClass()), argIndex);
+        if (lambdaType == null) return; // No type checking on raw types
         if (!registryClass.isAssignableFrom(lambdaType)) {
             throw new ClassCastException(
                 lambdaType + " cannot be used as supplier return type for registry " + registryClass + " in " + owner
@@ -120,7 +135,7 @@ public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
     }
 
     public final T init(ResourceKey<R> key) {
-        final var value = initialValue.get();
+        final var value = initialValue.apply(key);
         initialValue = null;
         holder = createHolder(key);
         return value;

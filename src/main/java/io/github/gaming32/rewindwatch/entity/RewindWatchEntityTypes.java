@@ -1,30 +1,21 @@
 package io.github.gaming32.rewindwatch.entity;
 
+import io.github.gaming32.annreg.RegisterFor;
+import io.github.gaming32.annreg.value.RegValues;
 import io.github.gaming32.rewindwatch.RewindWatch;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
+@RegisterFor(modid = RewindWatch.MOD_ID, registry = "entity_type")
 public class RewindWatchEntityTypes {
-    private static final DeferredRegister<EntityType<?>> REGISTER =
-        DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, RewindWatch.MOD_ID);
-
-    public static final Supplier<EntityType<FakePlayer>> FAKE_PLAYER = REGISTER.register(
-        "fake_player", () ->
-            EntityType.Builder.of(FakePlayer::new, MobCategory.MISC)
-                .sized(0.6f, 1.8f)
-                .eyeHeight(1.62f)
-                .vehicleAttachment(Player.DEFAULT_VEHICLE_ATTACHMENT)
-                .clientTrackingRange(32)
-                .build("rewindwatch:fake_player")
+    public static final Supplier<EntityType<FakePlayer>> FAKE_PLAYER = RegValues.ofEntityType(() ->
+        EntityType.Builder.of(FakePlayer::new, MobCategory.MISC)
+            .sized(0.6f, 1.8f)
+            .eyeHeight(1.62f)
+            .vehicleAttachment(Player.DEFAULT_VEHICLE_ATTACHMENT)
+            .clientTrackingRange(32)
     );
-
-    public static void register(IEventBus bus) {
-        REGISTER.register(bus);
-    }
 }

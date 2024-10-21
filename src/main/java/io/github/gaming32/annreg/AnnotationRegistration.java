@@ -156,9 +156,10 @@ public class AnnotationRegistration {
             return;
         }
         final var value = (RegValueImpl<R, ?>)fieldValue;
-        final var key = ResourceKey.create(
-            registry.key(), idTemplate.withPath(field.getName().toLowerCase(Locale.ROOT))
-        );
+        final var id = field.isAnnotationPresent(RegistryId.class)
+            ? field.getDeclaredAnnotation(RegistryId.class).value()
+            : field.getName().toLowerCase(Locale.ROOT);
+        final var key = ResourceKey.create(registry.key(), idTemplate.withPath(id));
         Registry.register(registry, key, value.init(key));
     }
 
