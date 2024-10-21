@@ -4,18 +4,15 @@ import io.github.gaming32.annreg.AnnotationRegistration;
 import io.github.gaming32.annreg.RegisterFor;
 import net.jodah.typetools.TypeResolver;
 import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -33,24 +30,31 @@ public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
     }
 
     @SuppressWarnings("unchecked")
-    protected RegValueImpl(Supplier<T> initialValue) {
-        this(initialValue, (ResourceKey<Registry<R>>)findRegistry(initialValue));
+    public RegValueImpl(Supplier<T> initialValue, Object inferenceLambda) {
+        this(initialValue, (ResourceKey<Registry<R>>)findRegistry(inferenceLambda, false));
     }
 
-    private static ResourceKey<?> findRegistry(Supplier<?> supplier) {
-        final var ownerClass = getLambdaClass(supplier);
+    @SuppressWarnings("unchecked")
+    protected RegValueImpl(Supplier<T> initialValue) {
+        this(initialValue, (ResourceKey<Registry<R>>)findRegistry(initialValue, true));
+    }
+
+    private static ResourceKey<?> findRegistry(Object lambda, boolean validateSupplier) {
+        final var ownerClass = getLambdaClass(lambda);
         final var registryKey = getRegistry(ownerClass);
         if (!BuiltInRegistries.REGISTRY.containsKey(registryKey.location())) {
             throw new IllegalArgumentException("Could not find builtin registry " + registryKey.location());
         }
-        final var registryClass = AnnotationRegistration.REG_TYPES.get(registryKey);
-        if (registryClass != null) {
-            validateSupplier(supplier, registryClass, ownerClass);
+        if (validateSupplier) {
+            final var registryClass = AnnotationRegistration.REG_TYPES.get(registryKey);
+            if (registryClass != null) {
+                validateSupplier((Supplier<?>)lambda, registryClass, ownerClass);
+            }
         }
         return registryKey;
     }
 
-    static void validateRegisterFor(Object lambda, ResourceKey<?> realTarget) {
+    public static void validateRegisterFor(Object lambda, ResourceKey<?> realTarget) {
         final var owner = getLambdaClass(lambda);
         final var target = getRegistry(owner);
         if (target != realTarget) {
@@ -155,22 +159,6 @@ public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
         @Override
         protected DeferredHolder<Item, I> createHolder(ResourceKey<Item> key) {
             return DeferredItem.createItem(key);
-        }
-    }
-
-    static final class ItemComponentTypeValueImpl<D>
-        extends RegValueImpl<DataComponentType<?>, DataComponentType<D>>
-        implements ItemComponentTypeValue<D> {
-        ItemComponentTypeValueImpl(Supplier<DataComponentType<D>> initialValue) {
-            super(initialValue, Registries.DATA_COMPONENT_TYPE);
-        }
-    }
-
-    static final class AttachmentTypeValueImpl<T>
-        extends RegValueImpl<AttachmentType<?>, AttachmentType<T>>
-        implements AttachmentTypeValue<T> {
-        AttachmentTypeValueImpl(Supplier<AttachmentType<T>> initialValue) {
-            super(initialValue, NeoForgeRegistries.Keys.ATTACHMENT_TYPES);
         }
     }
 }

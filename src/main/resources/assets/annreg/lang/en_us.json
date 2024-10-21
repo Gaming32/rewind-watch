@@ -1,7 +1,8 @@
 {
-  "annreg.error.invalid_registry": "Invalid registry ''{0}'' requested by {1} in {100,modinfo,id}: {102,exc,msg}",
-  "annreg.error.missing_mod": "Missing mod ''{0}'', requested by {1}",
-  "annreg.error.invalid_namespace": "Invalid namespace ''{0}'' in {1}: {102,exc,msg}",
-  "annreg.error.nonstatic_field": "Cannot register to non-static field {0}",
-  "annreg.error.access_failure": "Failed to access field {0}: {102,exc,msg}"
+  "annreg.issue.invalid_registry": "Invalid registry ''{0}'' requested by {1} in {100,modinfo,id}: {102,exc,msg}",
+  "annreg.issue.missing_mod": "Missing mod ''{0}'', requested by {1}",
+  "annreg.issue.invalid_namespace": "Invalid namespace ''{0}'' in {1}: {102,exc,msg}",
+  "annreg.issue.nonstatic_field": "Cannot register to non-static field {0}",
+  "annreg.issue.access_failure": "Failed to access field {0}: {102,exc,msg}",
+  "annreg.issue.not_impl": "RegValue not an instance of RegValueImpl on field {0}"
 }

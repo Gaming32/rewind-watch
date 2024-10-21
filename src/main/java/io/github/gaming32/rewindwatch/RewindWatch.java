@@ -10,7 +10,6 @@ import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedState
 import io.github.gaming32.rewindwatch.network.serverbound.ServerboundClientStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchEntityDataSerializers;
 import io.github.gaming32.rewindwatch.registry.RewindWatchSoundEvents;
-import io.github.gaming32.rewindwatch.trigger.RewindWatchCriteriaTriggers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -28,7 +27,6 @@ public class RewindWatch {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public RewindWatch(IEventBus bus) {
-        RewindWatchCriteriaTriggers.register(bus);
         RewindWatchEntityDataSerializers.register(bus);
         RewindWatchEntityTypes.register(bus);
         RewindWatchSoundEvents.register(bus);

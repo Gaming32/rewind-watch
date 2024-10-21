@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 @ApiStatus.Internal
 @Mod(AnnotationRegistration.MOD_ID)
@@ -54,7 +55,7 @@ public class AnnotationRegistration {
                 } catch (ResourceLocationException e) {
                     issue(
                         ModLoadingIssue.warning(
-                            "annreg.error.invalid_registry",
+                            "annreg.issue.invalid_registry",
                             annotation.annotationData().get("registry"),
                             annotation.clazz().getClassName()
                         )
@@ -80,7 +81,7 @@ public class AnnotationRegistration {
             final var container = ModList.get().getModContainerById(modId).orElse(null);
             if (container == null) {
                 issue(ModLoadingIssue.warning(
-                    "annreg.error.missing_mod",
+                    "annreg.issue.missing_mod",
                     modId, annotation.clazz().getClassName()
                 ));
                 iter.remove();
@@ -110,35 +111,51 @@ public class AnnotationRegistration {
             idTemplate = ResourceLocation.fromNamespaceAndPath(namespace, "");
         } catch (ResourceLocationException e) {
             issue(ModLoadingIssue.warning(
-                "annreg.error.invalid_namespace",
+                "annreg.issue.invalid_namespace",
                 namespace, clazz.getName()
             ).withCause(e));
             return;
         }
         for (final var field : clazz.getDeclaredFields()) {
-            if (!RegValue.class.isAssignableFrom(field.getType())) continue;
-            registerForField(registry, idTemplate, field);
+            if (RegValue.class.isAssignableFrom(field.getType())) {
+                registerForField(registry, idTemplate, field, false);
+            } else if (field.getType() == Supplier.class) {
+                registerForField(registry, idTemplate, field, true);
+            }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void registerForField(Registry<T> registry, ResourceLocation idTemplate, Field field) {
+    private <R> void registerForField(
+        Registry<R> registry, ResourceLocation idTemplate, Field field, boolean isSupplier
+    ) {
         if (!Modifier.isStatic(field.getModifiers())) {
-            issue(ModLoadingIssue.warning(
-                "annreg.error.nonstatic_field", field
-            ));
+            if (!isSupplier) {
+                issue(ModLoadingIssue.warning(
+                    "annreg.issue.nonstatic_field", field
+                ));
+            }
             return;
         }
-        final RegValueImpl<T, ?> value;
+        final Object fieldValue;
         try {
             field.setAccessible(true);
-            value = (RegValueImpl<T, ?>)field.get(null);
+            fieldValue = field.get(null);
         } catch (IllegalAccessException e) {
-            issue(ModLoadingIssue.warning(
-                "annreg.error.access_failure", field
-            ).withCause(e));
+            if (!isSupplier) {
+                issue(ModLoadingIssue.warning(
+                    "annreg.issue.access_failure", field
+                ).withCause(e));
+            }
             return;
         }
+        if (!(fieldValue instanceof RegValueImpl<?, ?>)) {
+            if (!isSupplier) {
+                issue(ModLoadingIssue.warning("annreg.issue.not_impl", field));
+            }
+            return;
+        }
+        final var value = (RegValueImpl<R, ?>)fieldValue;
         final var key = ResourceKey.create(
             registry.key(), idTemplate.withPath(field.getName().toLowerCase(Locale.ROOT))
         );
