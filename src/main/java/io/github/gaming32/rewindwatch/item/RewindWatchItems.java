@@ -1,19 +1,14 @@
 package io.github.gaming32.rewindwatch.item;
 
+import io.github.gaming32.annreg.ItemValue;
+import io.github.gaming32.annreg.RegisterFor;
 import io.github.gaming32.rewindwatch.RewindWatch;
 import net.minecraft.world.item.Item;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.item.Rarity;
 
+@RegisterFor(modid = RewindWatch.MOD_ID, registry = Item.class)
 public class RewindWatchItems {
-    private static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(RewindWatch.MOD_ID);
-
-    public static final DeferredItem<RewindWatchItem> REWIND_WATCH = REGISTER.registerItem(
-        "rewind_watch", RewindWatchItem::new, new Item.Properties().stacksTo(1)
+    public static final ItemValue<RewindWatchItem> REWIND_WATCH = ItemValue.of(
+        RewindWatchItem::new, new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)
     );
-
-    public static void register(IEventBus bus) {
-        REGISTER.register(bus);
-    }
 }

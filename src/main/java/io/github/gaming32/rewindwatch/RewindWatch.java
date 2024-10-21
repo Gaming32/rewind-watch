@@ -35,7 +35,6 @@ public class RewindWatch {
         RewindWatchDataComponents.register(bus);
         RewindWatchEntityDataSerializers.register(bus);
         RewindWatchEntityTypes.register(bus);
-        RewindWatchItems.register(bus);
         RewindWatchSoundEvents.register(bus);
 
         LOGGER.info("Rewinding time...");
