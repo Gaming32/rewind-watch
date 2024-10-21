@@ -16,5 +16,6 @@ public @interface RegisterFor {
     @Pattern("[a-z0-9_.-]*")
     String namespace() default "";
 
-    Class<?> registry();
+    @Pattern("([a-z0-9_.-]*:)?[a-z0-9/._-]*")
+    String registry();
 }

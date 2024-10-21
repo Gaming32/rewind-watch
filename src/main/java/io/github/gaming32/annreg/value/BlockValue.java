@@ -1,5 +1,6 @@
-package io.github.gaming32.annreg;
+package io.github.gaming32.annreg.value;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -11,16 +12,21 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public sealed interface BlockValue<B extends Block> extends RegValue<Block, B>, ItemLike permits RegValueImpl.BlockValueImpl {
-    static <B extends Block> BlockValue<B> of(Supplier<B> value) {
-        return new RegValueImpl.BlockValueImpl<>(value);
+    private static <B extends Block> BlockValue<B> ofImpl(Supplier<B> supplier) {
+        return new RegValueImpl.BlockValueImpl<>(supplier);
+    }
+
+    static <B extends Block> BlockValue<B> of(Supplier<B> supplier) {
+        RegValueImpl.validateRegisterFor(supplier, Registries.BLOCK);
+        return ofImpl(supplier);
     }
 
     static <B extends Block> BlockValue<B> of(
         Function<BlockBehaviour.Properties, B> creator,
         BlockBehaviour.Properties properties
     ) {
-        RegValueImpl.validateRegisterFor(creator);
-        return of(() -> creator.apply(properties));
+        RegValueImpl.validateRegisterFor(creator, Registries.BLOCK);
+        return ofImpl(() -> creator.apply(properties));
     }
 
     @Override

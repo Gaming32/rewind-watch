@@ -1,4 +1,4 @@
-package io.github.gaming32.annreg;
+package io.github.gaming32.annreg.value;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -9,8 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public sealed interface RegValue<R, T extends R> extends Supplier<T>
-    permits BlockValue, ComponentTypeValue, ItemValue, RegValueImpl {
+public interface RegValue<R, T extends R> extends Supplier<T> {
     static <R, T extends R> RegValue<R, T> of(Supplier<T> value) {
         return new RegValueImpl<>(value);
     }

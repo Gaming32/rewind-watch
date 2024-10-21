@@ -1,48 +1,63 @@
-package io.github.gaming32.annreg;
+package io.github.gaming32.annreg.value;
 
+import io.github.gaming32.annreg.AnnotationRegistration;
+import io.github.gaming32.annreg.RegisterFor;
 import net.jodah.typetools.TypeResolver;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Supplier;
 
-sealed class RegValueImpl<R, T extends R> implements RegValue<R, T> {
+@ApiStatus.OverrideOnly
+public class RegValueImpl<R, T extends R> implements RegValue<R, T> {
     Supplier<T> initialValue;
     private final ResourceKey<Registry<R>> registry;
     DeferredHolder<R, T> holder = null;
 
-    RegValueImpl(Supplier<T> initialValue, ResourceKey<Registry<R>> registry) {
+    protected RegValueImpl(Supplier<T> initialValue, ResourceKey<Registry<R>> registry) {
         this.initialValue = initialValue;
         this.registry = registry;
     }
 
     @SuppressWarnings("unchecked")
-    RegValueImpl(Supplier<T> initialValue) {
+    protected RegValueImpl(Supplier<T> initialValue) {
         this(initialValue, (ResourceKey<Registry<R>>)findRegistry(initialValue));
     }
 
     private static ResourceKey<?> findRegistry(Supplier<?> supplier) {
         final var ownerClass = getLambdaClass(supplier);
-        final var annotation = getRegisterFor(ownerClass);
-        final var registryClass = annotation.registry();
-        validateSupplier(supplier, registryClass);
-        final var registry = AnnotationRegistration.REG_TYPES.get(registryClass);
-        if (registry == null) {
-            throw new IllegalArgumentException("No registry for " + registryClass + " is known.");
+        final var registryKey = getRegistry(ownerClass);
+        if (!BuiltInRegistries.REGISTRY.containsKey(registryKey.location())) {
+            throw new IllegalArgumentException("Could not find builtin registry " + registryKey.location());
         }
-        return registry;
+        final var registryClass = AnnotationRegistration.REG_TYPES.get(registryKey);
+        if (registryClass != null) {
+            validateSupplier(supplier, registryClass, ownerClass);
+        }
+        return registryKey;
     }
 
-    static void validateRegisterFor(Object lambda) {
-        getRegisterFor(getLambdaClass(lambda));
+    static void validateRegisterFor(Object lambda, ResourceKey<?> realTarget) {
+        final var owner = getLambdaClass(lambda);
+        final var target = getRegistry(owner);
+        if (target != realTarget) {
+            throw new IllegalArgumentException(
+                "Registry entered was " + target.location() + ", but " + realTarget.location() + " was expected in " + owner
+            );
+        }
     }
 
     private static Class<?> getLambdaClass(Object lambda) {
@@ -59,25 +74,29 @@ sealed class RegValueImpl<R, T extends R> implements RegValue<R, T> {
         }
         if (ownerClass == null) {
             throw new IllegalArgumentException(
-                "Cannot infer owner class. Please pass a lambda or anonymous class inline to RegValue#of."
+                "Cannot infer owner class on " + lambda + ". Please pass a lambda or anonymous class inline to RegValue#of."
             );
         }
         return ownerClass;
     }
 
-    private static RegisterFor getRegisterFor(Class<?> clazz) {
+    private static ResourceKey<?> getRegistry(Class<?> clazz) {
         final var annotation = clazz.getDeclaredAnnotation(RegisterFor.class);
         if (annotation == null) {
             throw new IllegalArgumentException("Missing @RegisterFor on " + clazz + ".");
         }
-        return annotation;
+        final var registryName = ResourceLocation.tryParse(annotation.registry());
+        if (registryName == null) {
+            throw new IllegalArgumentException("Invalid registry key " + annotation.registry());
+        }
+        return ResourceKey.createRegistryKey(registryName);
     }
 
-    private static void validateSupplier(Supplier<?> supplier, Class<?> registryClass) {
+    private static void validateSupplier(Supplier<?> supplier, Class<?> registryClass, Class<?> owner) {
         final var lambdaType = TypeResolver.resolveRawArgument(Supplier.class, supplier.getClass());
         if (!registryClass.isAssignableFrom(lambdaType)) {
             throw new ClassCastException(
-                lambdaType + " cannot be used as supplier return type for registry " + registryClass
+                lambdaType + " cannot be used as supplier return type for registry " + registryClass + " in " + owner
             );
         }
     }
@@ -96,12 +115,14 @@ sealed class RegValueImpl<R, T extends R> implements RegValue<R, T> {
         return result;
     }
 
-    final void init(ResourceKey<R> key) {
+    public final T init(ResourceKey<R> key) {
+        final var value = initialValue.get();
         initialValue = null;
         holder = createHolder(key);
+        return value;
     }
 
-    DeferredHolder<R, T> createHolder(ResourceKey<R> key) {
+    protected DeferredHolder<R, T> createHolder(ResourceKey<R> key) {
         return DeferredHolder.create(key);
     }
 
@@ -116,7 +137,7 @@ sealed class RegValueImpl<R, T extends R> implements RegValue<R, T> {
         }
 
         @Override
-        DeferredHolder<Block, B> createHolder(ResourceKey<Block> key) {
+        protected DeferredHolder<Block, B> createHolder(ResourceKey<Block> key) {
             return DeferredBlock.createBlock(key);
         }
     }
@@ -132,16 +153,24 @@ sealed class RegValueImpl<R, T extends R> implements RegValue<R, T> {
         }
 
         @Override
-        DeferredHolder<Item, I> createHolder(ResourceKey<Item> key) {
+        protected DeferredHolder<Item, I> createHolder(ResourceKey<Item> key) {
             return DeferredItem.createItem(key);
         }
     }
 
-    static final class ComponentTypeValueImpl<D>
+    static final class ItemComponentTypeValueImpl<D>
         extends RegValueImpl<DataComponentType<?>, DataComponentType<D>>
-        implements ComponentTypeValue<D> {
-        ComponentTypeValueImpl(Supplier<DataComponentType<D>> initialValue) {
+        implements ItemComponentTypeValue<D> {
+        ItemComponentTypeValueImpl(Supplier<DataComponentType<D>> initialValue) {
             super(initialValue, Registries.DATA_COMPONENT_TYPE);
+        }
+    }
+
+    static final class AttachmentTypeValueImpl<T>
+        extends RegValueImpl<AttachmentType<?>, AttachmentType<T>>
+        implements AttachmentTypeValue<T> {
+        AttachmentTypeValueImpl(Supplier<AttachmentType<T>> initialValue) {
+            super(initialValue, NeoForgeRegistries.Keys.ATTACHMENT_TYPES);
         }
     }
 }
