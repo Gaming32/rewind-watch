@@ -1,5 +1,24 @@
 {
   "parent": "minecraft:item/generated",
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        25
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ],
+      "translation": [
+        1.13,
+        5,
+        1.13
+      ]
+    }
+  },
   "textures": {
     "layer0": "rewindwatch:item/rewind_watch"
   }
