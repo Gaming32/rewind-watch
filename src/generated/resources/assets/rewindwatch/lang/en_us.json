@@ -8,5 +8,7 @@
   "item.rewindwatch.rewind_watch.recalled": "Player Recalled",
   "item.rewindwatch.rewind_watch.used": "Rewind Watch Used",
   "item.rewindwatch.rewind_watch.visible": "The watch reads %s",
+  "rewindwatch.configuration.post_effects": "Post Effects",
+  "rewindwatch.configuration.post_effects.tooltip": "• §bON§r — Show all post effects\n• §bSIMPLE§r — Show post effects as simpler versions that don't move\n• §bOFF§r — Don't show any post effects",
   "rewindwatch.dimension_gone": "The dimension you are recalling to no longer exists"
 }
