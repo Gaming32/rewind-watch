@@ -2,6 +2,7 @@ package io.github.gaming32.rewindwatch;
 
 import io.github.gaming32.rewindwatch.components.RewindWatchDataComponents;
 import io.github.gaming32.rewindwatch.item.RewindWatchItem;
+import io.github.gaming32.rewindwatch.item.RewindWatchItems;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
 import io.github.gaming32.rewindwatch.registry.RewindWatchAttachmentTypes;
@@ -78,8 +79,10 @@ public class RewindWatchEventHandler {
     // We need the player as context, which isn't passed to appendHoverText
     @SubscribeEvent
     public static void appendWatchTooltip(ItemTooltipEvent event) {
-        final var player = event.getEntity();
         final var item = event.getItemStack();
+        if (!item.is(RewindWatchItems.REWIND_WATCH.get())) return;
+
+        final var player = event.getEntity();
         final var result = event.getToolTip();
         if (player == null || event.getFlags().isCreative()) return;
 
