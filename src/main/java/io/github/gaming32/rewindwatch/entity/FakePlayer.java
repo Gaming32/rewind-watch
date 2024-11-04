@@ -176,6 +176,11 @@ public class FakePlayer extends LivingEntity implements IEntityWithComplexSpawn 
     }
 
     @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
     public @NotNull Iterable<ItemStack> getArmorSlots() {
         return Collections.emptyList();
     }
