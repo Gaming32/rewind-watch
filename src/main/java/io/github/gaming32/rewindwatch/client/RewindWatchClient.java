@@ -15,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -31,7 +30,6 @@ import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import org.jetbrains.annotations.Nullable;
 
 @Mod(value = RewindWatch.MOD_ID, dist = Dist.CLIENT)
@@ -43,7 +41,6 @@ public class RewindWatchClient {
 
     public RewindWatchClient(IEventBus bus, ModContainer container) {
         bus.addListener(this::registerEntityRenderers);
-        bus.addListener(this::createEntityAttributes);
         bus.addListener(this::configReloaded);
         NeoForge.EVENT_BUS.addListener(this::renderLiving);
         NeoForge.EVENT_BUS.addListener(this::tickPlayer);
@@ -57,10 +54,6 @@ public class RewindWatchClient {
 
     private void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(RewindWatchEntityTypes.FAKE_PLAYER.get(), FakePlayerRenderer::new);
-    }
-
-    private void createEntityAttributes(EntityAttributeCreationEvent event) {
-        event.put(RewindWatchEntityTypes.FAKE_PLAYER.get(), Player.createAttributes().build());
     }
 
     private void configReloaded(ModConfigEvent.Reloading event) {

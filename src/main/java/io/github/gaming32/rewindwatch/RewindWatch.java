@@ -2,17 +2,19 @@ package io.github.gaming32.rewindwatch;
 
 import com.mojang.logging.LogUtils;
 import io.github.gaming32.rewindwatch.client.RWClientNetworking;
+import io.github.gaming32.rewindwatch.entity.RewindWatchEntityTypes;
 import io.github.gaming32.rewindwatch.item.RewindWatchItems;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundClearLockedStatePayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundEntityEffectPayload;
 import io.github.gaming32.rewindwatch.network.clientbound.ClientboundLockedStatePayload;
 import io.github.gaming32.rewindwatch.network.serverbound.ServerboundClientStatePayload;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 
@@ -23,7 +25,7 @@ public class RewindWatch {
     public static final String PROTOCOL_VERSION = "1";
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public RewindWatch(IEventBus bus) {
+    public RewindWatch() {
         LOGGER.info("Rewinding time...");
     }
 
@@ -57,5 +59,10 @@ public class RewindWatch {
                 ServerboundClientStatePayload.STREAM_CODEC,
                 RWServerNetworking::handleAnimationState
             );
+    }
+
+    @SubscribeEvent
+    public static void createEntityAttributes(EntityAttributeCreationEvent event) {
+        event.put(RewindWatchEntityTypes.FAKE_PLAYER.get(), Player.createAttributes().build());
     }
 }
